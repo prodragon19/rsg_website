@@ -1,1 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Who are we? | RSG Software</title>
 
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
+
+    <style>
+        .page-header {
+            background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), 
+                        url('https://i.postimg.cc/5ysn72Jj/vfw-(1).jpg') center/cover no-repeat;
+            height: 380px;
+            display: flex;
+            align-items: center;
+            color: white;
+        }
+        .section {
+            padding: 70px 0;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Navbar (samma som startsidan) -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <strong>RSG</strong> Software
+            </a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbar">
+                <ul class="navbar-nav ml-auto">
+                    <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/aircraft">Our Aircraft</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="/about">About</a></li>
+                </ul>
+                <div class="ml-lg-3 mt-3 mt-lg-0">
+                    <a href="/login" class="btn btn-outline-dark btn-sm mr-2">Login</a>
+                    <a href="/signup" class="btn btn-dark btn-sm">Sign Up</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Page Header -->
+    <header class="page-header">
+        <div class="container text-center">
+            <h1 class="display-4 font-weight-bold">Who are we?</h1>
+            <p class="lead mb-0">The people behind RSG Software</p>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="container section">
+
+        <!-- Om företaget -->
+        <div class="row justify-content-center mb-5">
+            <div class="col-lg-8 text-center">
+                <h2 class="mb-4">We build realistic aircraft for serious sim pilots</h2>
+                <p class="lead text-muted">
+                    RSG Software was founded by Eliaz and Jan, who both have big passions in the flight simming world. RSG Software was built to give the customers realistic, high fidelity aircrafts for a competing price
+                </p>
+            </div>
+        </div>
+
+        <!-- Mission + Vision -->
+        <div class="row mb-5">
+            <div class="col-md-6 mb-4">
+                <h4>Our Mission</h4>
+                <p>
+                    To develop the most realistic and well-crafted aircraft addons for 
+                    Microsoft Flight Simulator. We believe that quality and attention to detail 
+                    matter more than quantity.
+                </p>
+            </div>
+            <div class="col-md-6 mb-4">
+                <h4>Our Vision</h4>
+                <p>
+                    To become one of the most respected developers in the flight simulation 
+                    community by delivering products that sim pilots can trust and enjoy 
+                    for years to come.
+                </p>
+            </div>
+        </div>
+
+        <!-- Värderingar -->
+        <div class="row text-center mt-4">
+            <div class="col-12 mb-4">
+                <h3>What we believe in</h3>
+            </div>
+            <div class="col-md-4 mb-4">
+                <h5>Quality First</h5>
+                <p class="text-muted">We would rather release one excellent product than many average ones.</p>
+            </div>
+            <div class="col-md-4 mb-4">
+                <h5>Realism & Accuracy</h5>
+                <p class="text-muted">Every system is researched using real aircraft documentation and procedures.</p>
+            </div>
+            <div class="col-md-4 mb-4">
+                <h5>Community Driven</h5>
+                <p class="text-muted">We listen to our users and continuously improve our products based on feedback.</p>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Call to Action -->
+    <div class="bg-light py-5">
+        <div class="container text-center">
+            <h4 class="mb-3">Want to see what we’re working on?</h4>
+            <a href="/aircraft" class="btn btn-primary btn-lg px-5">Browse Our Aircraft</a>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
+</body>
+</html>
