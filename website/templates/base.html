@@ -1,61 +1,110 @@
 <!DOCTYPE html>
-<html>
-    <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <link
-      rel="stylesheet"
-      href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
-      integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh"
-      crossorigin="anonymous"
-    />
-    <link
-      rel="stylesheet"
-      href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css"
-      crossorigin="anonymous"
-    />
-    <title>
-        {% block title %}
-        Home
-        {% endblock %}
-    </title>
-    </head>
-    <body>
-        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-            <button 
-            class="navbar-toggle" 
-            type="button" 
-            data-toggle="collapse" 
-            data-target="#navbar"
-            >
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}RSG Software{% endblock %}</title>
+    
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    
+    <style>
+        .hero {
+            background:
+                linear-gradient(rgba(0, 0, 0, 0.45), rgba(0, 0, 0, 0.45)),
+                url('https://i.postimg.cc/5ysn72Jj/vfw-(1).jpg') no-repeat;
+            background-size: cover;
+            background-position: center 35%;
+            background-attachment: scroll;
+            height: 100vh;
+            min-height: 700px;
+            display: flex;
+            align-items: center;
+            color: white;
+        }
+        .hero-content {
+            text-align: center;
+        }
+        .hero h1 {
+            font-size: 4.5rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+        }
+        .section-intro {
+            padding: 80px 0;
+            background: #f8f9fa;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <strong>RSG</strong> Software
+            </a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbar">
-              <div class="navbar-nav">
-                <a class="nav-item nav-link" id="login" href="/login">Login</a>
-                <a class="nav-item nav-link" id="signUp" href="/signup">Sign Up</a>
-                <a class="nav-item nav-link" id="logout" href="/logout">Logout</a>
-                <a class="nav-item nav-link" id="home" href="/">Home</a>
-              </div>
+                <ul class="navbar-nav ml-auto">
+                    <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/aircraft">Our Aircraft</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/about">About</a></li>
+                </ul>
+                <div class="ml-lg-3 mt-3 mt-lg-0">
+                    <a href="/login" class="btn btn-outline-dark btn-sm mr-2">Login</a>
+                    <a href="/signup" class="btn btn-dark btn-sm">Sign Up</a>
+                </div>
             </div>
-        </nav>
+        </div>
+    </nav>
 
-        <script
-      src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
-      integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
-      crossorigin="anonymous"
-    ></script>
-    <script
-      src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
-      integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
-      crossorigin="anonymous"
-    ></script>
-    <script
-      src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
-      integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
-      crossorigin="anonymous"
-    ></script>
-    
-    </body>
+    <!-- HERO -->
+    <header class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <div class="mb-3">
+                    <span class="badge badge-light px-3 py-2" style="font-size: 0.9rem; letter-spacing: 1px;">IN DEVELOPMENT</span>
+                </div>
+               
+                <h1 class="display-3 font-weight-bold">VFW-Fokker 614</h1>
+                <h2 class="mb-4" style="font-size: 2.2rem; font-weight: 300;">For Microsoft Flight Simulator 2024</h2>
+               
+                <p class="lead mb-5" style="max-width: 600px; margin: 0 auto;">
+                    Welcome to the VFW-Fokker 614
+                </p>
 
-</html>    
+                <!-- FIXAD LÄNK -->
+                <a href="/about" class="btn btn-primary btn-lg px-5 py-3">Who are we?</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Intro section -->
+    <section class="section-intro">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-8 text-center">
+                    <h2 class="mb-4">Welcome to RSG Software</h2>
+                    <p class="lead text-muted">
+                        We develop high-fidelity aircraft and systems for flight simulation. 
+                        Our focus is building high quality aircraft systems at a good price.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="container mt-5">
+       
+        RSG Software 2026. Thank you Jan, Eliaz, Vanja, Leo etc
+        
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
+</body>
+</html>
