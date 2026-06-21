@@ -1,1 +1,25 @@
+<h1>Login</h1>
 
+<input id="username" placeholder="Username">
+<input id="password" type="password" placeholder="Password">
+
+<button onclick="login()">Login</button>
+
+<p id="error"></p>
+
+<script>
+function login(){
+
+let user = document.getElementById("username").value;
+let pass = document.getElementById("password").value;
+
+if(user === "admin" && pass === "1234"){
+    localStorage.setItem("loggedIn","true");
+    window.location.href="/";
+}
+else{
+    document.getElementById("error").innerText="Wrong login";
+}
+
+}
+</script>
