@@ -1,8 +1,8 @@
-from flask import Blueprint, render_template, request, redirect, url_for, session, flash
+from flask import Blueprint, render_template, request, redirect, url_for, session
 
 auth = Blueprint('auth', __name__)
 
-# Enkel användare (senare kan du ha databas)
+# Temporary user storage (resets when the server restarts)
 USERS = {
     "admin": "1234"
 }
@@ -22,11 +22,32 @@ def login():
 
     return render_template('login.html')
 
+
+@auth.route('/signup', methods=['GET', 'POST'])
+def signup():
+    if request.method == 'POST':
+        username = request.form.get('username')
+        password = request.form.get('password')
+        confirm = request.form.get('confirm_password')
+
+        if not username or not password:
+            return render_template('signup.html', error="Please fill in all fields")
+
+        if password != confirm:
+            return render_template('signup.html', error="Passwords do not match")
+
+        if username in USERS:
+            return render_template('signup.html', error="Username already exists")
+
+        # Add the new user
+        USERS[username] = password
+
+        return render_template('signup.html', success="Account created! You can now log in.")
+
+    return render_template('signup.html')
+
+
 @auth.route('/logout')
 def logout():
     session.clear()
     return redirect(url_for('views.home'))
-
-@auth.route('/signup')
-def signup():
-    return "<h3>Sign up page coming soon</h3>"
