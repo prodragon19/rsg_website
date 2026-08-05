@@ -3,211 +3,87 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>VFW-Fokker 614 | RSG Software</title>
-
+    <title>Our Aircraft | RSG Software</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
-
     <style>
-        .product-header {
-            padding: 60px 0 40px;
-            background: #f8f9fa;
-        }
-        .product-image {
-            border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-        }
+        .product-header { padding: 60px 0 40px; background: #f8f9fa; }
+        .product-image { border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
     </style>
 </head>
 <body>
 
-    <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
-        <div class="container">
-            <a class="navbar-brand" href="/">
-                <strong>RSG</strong> Software
-            </a>
-            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbar">
-                <ul class="navbar-nav ml-auto">
-                    <li class="nav-item"><a class="nav-link" href="/Base ">home</a></li>
-                    <li class="nav-item"><a class="nav-link" href="/aircraft">Our Aircraft</a></li>
-                    <li class="nav-item"><a class="nav-link" href="/about">About</a></li>
-                    <li class="nav-item"><a class="nav-link" href="/work-at-rsg">Work at RSG</a></li>
-                    <li class="nav-item"><a class="nav-link" href="/contact">Contact</a></li>
-                </ul>
-                <div class="ml-lg-3 mt-3 mt-lg-0">
-                    <a href="/login" class="btn btn-outline-dark btn-sm mr-2">Login</a>
-                    <a href="/signup" class="btn btn-dark btn-sm">Sign Up</a>
+<nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
+    <div class="container">
+        <a class="navbar-brand" href="/"><strong>RSG</strong> Software</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbar">
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
+                <li class="nav-item"><a class="nav-link active" href="/aircraft">Our Aircraft</a></li>
+                <li class="nav-item"><a class="nav-link" href="/about">About</a></li>
+                <li class="nav-item"><a class="nav-link" href="/work-at-rsg">Work at RSG</a></li>
+                <li class="nav-item"><a class="nav-link" href="/contact">Contact</a></li>
+            </ul>
+            <div class="ml-lg-3 mt-3 mt-lg-0">
+                {% if session.get('logged_in') %}
+                    <span class="btn btn-success btn-sm mr-2">Logged in ({{ session.get('username') }})</span>
+                    <a href="{{ url_for('auth.logout') }}" class="btn btn-outline-dark btn-sm">Logout</a>
+                {% else %}
+                    <a href="{{ url_for('auth.login') }}" class="btn btn-outline-dark btn-sm mr-2">Login</a>
+                    <a href="{{ url_for('auth.signup') }}" class="btn btn-dark btn-sm">Sign Up</a>
+                {% endif %}
             </div>
         </div>
     </div>
 </nav>
 
-    <!-- Produkt Header -->
-    <div class="product-header">
-        <div class="container">
-            <div class="row align-items-center">
-                <!-- Text -->
-                <div class="col-lg-6">
-                    <span class="badge badge-secondary mb-3">IN DEVELOPMENT</span>
-                    <h1 class="display-4 font-weight-bold">VFW-Fokker 614</h1>
-                    <p class="lead text-muted">For Microsoft Flight Simulator 2024</p>
-                    
-                    <div class="mt-4">
-                      
-                    </div>
-                </div>
+<div class="product-header">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6">
+                <span class="badge badge-secondary mb-3">IN DEVELOPMENT</span>
+                <h1 class="display-4 font-weight-bold">VFW-Fokker 614</h1>
+                <p class="lead text-muted">For Microsoft Flight Simulator 2024</p>
+            </div>
+            <div class="col-lg-6 mt-5 mt-lg-0">
+                <img src="https://i.postimg.cc/5ysn72Jj/vfw-(1).jpg" class="img-fluid product-image" alt="VFW-Fokker 614">
+            </div>
+        </div>
+    </div>
+</div>
 
-                <!-- Bild -->
-                <div class="col-lg-6 mt-5 mt-lg-0">
-                    <img src="https://i.postimg.cc/5ysn72Jj/vfw-(1).jpg" 
-                         class="img-fluid product-image" alt="VFW-Fokker 614">
+<div class="container py-5">
+    <div class="row">
+        <div class="col-lg-7">
+            <h3>About the VFW-Fokker 614</h3>
+            <p>The VFW-Fokker 614 was a unique aircraft — the only jet-powered airliner ever built by the German-Dutch consortium VFW-Fokker. With its distinctive overwing engines, it remains one of the most unique aircraft from the 1970s.</p>
+            <p>Our addon brings this rare aircraft to Microsoft Flight Simulator 2024 with a high level of detail and authentic systems simulation.</p>
+        </div>
+        <div class="col-lg-5 mt-4 mt-lg-0">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Key Features</h5>
+                    <ul class="list-unstyled mb-0">
+                        <li class="mb-2">• Highly detailed 3D model</li>
+                        <li class="mb-2">• Custom avionics and systems</li>
+                        <li class="mb-2">• Realistic flight dynamics</li>
+                        <li class="mb-2">• Authentic sound set</li>
+                    </ul>
                 </div>
             </div>
         </div>
     </div>
-
-    <!-- Produktinformation -->
-    <div class="container py-5">
-
-        <div class="row">
-            <!-- Beskrivning -->
-            <div class="col-lg-7">
-                <h3>About the VFW-Fokker 614</h3>
-                <p>
-                    The VFW-Fokker 614 was a unique aircraft — the only jet-powered airliner 
-                    ever built by the German-Dutch consortium VFW-Fokker. With its distinctive 
-                    overwing engines, it remains one of the most unique aircraft from the 1970s.
-                </p>
-                <p>
-                    Our addon brings this rare aircraft to Microsoft Flight Simulator 2024 
-                    with a high level of detail and authentic systems simulation.
-                </p>
-            </div>
-
-            <!-- Specifikationer -->
-            <div class="col-lg-5 mt-4 mt-lg-0">
-                <div class="card">
-                    <div class="card-body">
-                        <h5 class="card-title">Key Features</h5>
-                        <ul class="list-unstyled mb-0">
-                            <li class="mb-2">• Highly detailed 3D model</li>
-                            <li class="mb-2">• Custom avionics and systems</li>
-                            <li class="mb-2">• Realistic flight dynamics</li>
-                            <li class="mb-2">• Authentic sound set</li>
-                            <li class="mb-2"></li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <hr class="my-5">
-
-        <!-- Status -->
-        <div class="text-center">
-            <h4>Development Status</h4>
-            <p class="text-muted">Currently in active development • Expected release: 6/14/2027</p>
-            
-        </div>
-
+    <hr class="my-5">
+    <div class="text-center">
+        <h4>Development Status</h4>
+        <p class="text-muted">Currently in active development • Expected release: 6/14/2027</p>
     </div>
+</div>
 
-    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
-</body>
-</html>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Fairchild Metroliner III | RSG Software</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
-    <style>
-        .product-header {
-            padding: 60px 0 40px;
-            background: #f8f9fa;
-        }
-        .product-image {
-            border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            width: 100%;
-            aspect-ratio: 16 / 9;
-            object-fit: cover;
-            object-position: center;
-        }
-    </style>
-</head>
-<body>
-  
-    <!-- Product Header -->
-    <div class="product-header">
-        <div class="container">
-            <div class="row align-items-center">
-                <!-- Text -->
-                <div class="col-lg-6">
-                    <span class="badge badge-secondary mb-3">IN DEVELOPMENT</span>
-                    <h1 class="display-4 font-weight-bold">Fairchild Metroliner III</h1>
-                    <p class="lead text-muted">For Microsoft Flight Simulator 2024</p>
-                </div>
-                <!-- Image -->
-                <div class="col-lg-6 mt-5 mt-lg-0">
-                    <img src="https://i.ibb.co/8nC6Y9Tm/images.jpg"
-                         class="img-fluid product-image" 
-                         alt="Fairchild Metroliner III">
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Product Information -->
-    <div class="container py-5">
-        <div class="row">
-            <!-- Description -->
-            <div class="col-lg-7">
-                <h3>About the Fairchild Metroliner III</h3>
-                <p>
-                    The Fairchild Metroliner III (also known as the Fairchild Metro III) is a fast, 
-                    pressurized twin-turboprop regional airliner. Famous for its speed and reliability, 
-                    it served regional airlines and corporate operators around the world for decades.
-                </p>
-                <p>
-                    Our addon brings this classic turboprop to Microsoft Flight Simulator 2024 
-                    with a high level of detail and authentic systems simulation.
-                </p>
-            </div>
-            <!-- Key Features -->
-            <div class="col-lg-5 mt-4 mt-lg-0">
-                <div class="card">
-                    <div class="card-body">
-                        <h5 class="card-title">Key Features</h5>
-                        <ul class="list-unstyled mb-0">
-                            <li class="mb-2">• Highly detailed 3D model</li>
-                            <li class="mb-2">• Custom avionics and systems</li>
-                            <li class="mb-2">• Realistic flight dynamics</li>
-                            <li class="mb-2">• Authentic turboprop sound set</li>
-                            <li class="mb-2">• Multiple historical liveries</li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <hr class="my-5">
-
-        <!-- Status -->
-        <div class="text-center">
-            <h4>Development Status</h4>
-            <p class="text-muted">Currently in active development • No Expected release date</p>
-        </div>
-    </div>
-
-    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
 </body>
 </html>

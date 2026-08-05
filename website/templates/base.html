@@ -3,152 +3,95 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{% block title %}RSG Software{% endblock %}</title>
-    
+    <title>RSG Software</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
-    
     <style>
         .hero {
-            background:
-                linear-gradient(rgba(0, 0, 0, 0.45), rgba(0, 0, 0, 0.45)),
-                url(https://i.postimg.cc/brBqt5Lz/VFW614.png) no-repeat;
+            background: linear-gradient(rgba(0, 0, 0, 0.45), rgba(0, 0, 0, 0.45)),
+                        url('https://i.postimg.cc/brBqt5Lz/VFW614.png') no-repeat center 35%;
             background-size: cover;
-            background-position: center 35%;
-            background-attachment: scroll;
             height: 100vh;
             min-height: 700px;
             display: flex;
             align-items: center;
             color: white;
         }
-        .hero-content {
-            text-align: center;
-        }
-        .hero h1 {
-            font-size: 4.5rem;
-            font-weight: 700;
-            letter-spacing: 2px;
-        }
-        .section-intro {
-            padding: 80px 0;
-            background: #f8f9fa;
-        }
+        .hero-content { text-align: center; }
+        .hero h1 { font-size: 4.5rem; font-weight: 700; letter-spacing: 2px; }
+        .section-intro { padding: 80px 0; background: #f8f9fa; }
     </style>
 </head>
 <body>
 
-    <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
-        <div class="container">
-            <a class="navbar-brand" href="/">
-                <strong>RSG</strong> Software
-            </a>
-            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbar">
-                <ul class="navbar-nav ml-auto">
-                   <li class="nav-item"><a class="nav-link" href="/Base">home</a></li>
-                    <li class="nav-item"><a class="nav-link" href="/aircraft">Our Aircraft</a></li>
-                    <li class="nav-item"><a class="nav-link" href="/about">About</a></li>
-                    <li class="nav-item"><a class="nav-link" href="/work-at-rsg">Work at RSG</a></li>
-                    <li class="nav-item"><a class="nav-link" href="/contact">Contact</a></li>
-                </ul>
-                <div class="ml-lg-3 mt-3 mt-lg-0">
-                    <a href="/login" class="btn btn-outline-dark btn-sm mr-2">Login</a>
-                    <a href="/signup" class="btn btn-dark btn-sm">Sign Up</a>
-                </div>
+<nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
+    <div class="container">
+        <a class="navbar-brand" href="/"><strong>RSG</strong> Software</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbar">
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
+                <li class="nav-item"><a class="nav-link" href="/aircraft">Our Aircraft</a></li>
+                <li class="nav-item"><a class="nav-link" href="/about">About</a></li>
+                <li class="nav-item"><a class="nav-link" href="/work-at-rsg">Work at RSG</a></li>
+                <li class="nav-item"><a class="nav-link" href="/contact">Contact</a></li>
+            </ul>
+
+            <!-- RIKTIG SERVER-SIDE LOGIN -->
+            <div class="ml-lg-3 mt-3 mt-lg-0">
+                {% if session.get('logged_in') %}
+                    <span class="btn btn-success btn-sm mr-2">Logged in ({{ session.get('username') }})</span>
+                    <a href="{{ url_for('auth.logout') }}" class="btn btn-outline-dark btn-sm">Logout</a>
+                {% else %}
+                    <a href="{{ url_for('auth.login') }}" class="btn btn-outline-dark btn-sm mr-2">Login</a>
+                    <a href="{{ url_for('auth.signup') }}" class="btn btn-dark btn-sm">Sign Up</a>
+                {% endif %}
             </div>
         </div>
-    </nav>
+    </div>
+</nav>
 
-    <!-- HERO -->
-    <header class="hero">
-        <div class="container">
-            <div class="hero-content">
-                <div class="mb-3">
-                    <span class="badge badge-light px-3 py-2" style="font-size: 0.9rem; letter-spacing: 1px;">IN DEVELOPMENT</span>
-                </div>
-               
-                <h1 class="display-3 font-weight-bold">VFW-Fokker 614</h1>
-                <h2 class="mb-4" style="font-size: 2.2rem; font-weight: 300;">For Microsoft Flight Simulator 2024</h2>
-               
-                <p class="lead mb-5" style="max-width: 600px; margin: 0 auto;">
-                    Welcome to the VFW-Fokker 614
-                </p>
-
-                <!-- FIXAD LÄNK -->
-                <a href="/about" class="btn btn-primary btn-lg px-5 py-3">Who are we?</a>
+<!-- Resten av sidan (hero + content) behåller du som den är -->
+<header class="hero">
+    <div class="container">
+        <div class="hero-content">
+            <div class="mb-3">
+                <span class="badge badge-light px-3 py-2" style="font-size: 0.9rem; letter-spacing: 1px;">IN DEVELOPMENT</span>
             </div>
+            <h1 class="display-3 font-weight-bold">VFW-Fokker 614</h1>
+            <h2 class="mb-4" style="font-size: 2.2rem; font-weight: 300;">For Microsoft Flight Simulator 2024</h2>
+            <p class="lead mb-5" style="max-width: 600px; margin: 0 auto;">Welcome to the VFW-Fokker 614</p>
+            <a href="/about" class="btn btn-primary btn-lg px-5 py-3">Who are we?</a>
         </div>
-    </header>
+    </div>
+</header>
 
-   <!-- Intro Section -->
 <section class="section-intro py-5">
     <div class="container text-center">
-
-        <img src="https://i.postimg.cc/rwKST91B/rsgsoftware.png"
-             alt="RSG Software Logo"
-             class="mb-4"
-             style="width:400px;">
-
-        <h1 class="mb-3">
-            Welcome to RSG Software
-        </h1>
-
-        <p class="lead text-muted mx-auto" style="max-width:750px;">
-            We develop high-fidelity aircraft and simulation systems 
-            for Microsoft Flight Simulator. Our goal is to create 
-            realistic, detailed and accessible experiences for virtual pilots worldwide.
+        <img src="https://i.postimg.cc/rwKST91B/rsgsoftware.png" alt="RSG Software Logo" class="mb-4" style="width: 400px; max-width: 100%;">
+        <h1 class="mb-3">Welcome to RSG Software</h1>
+        <p class="lead text-muted mx-auto" style="max-width: 750px;">
+            We develop high-fidelity aircraft and simulation systems for Microsoft Flight Simulator.
         </p>
-
     </div>
 </section>
-
 
 <section class="section-intro py-5 bg-light">
     <div class="container text-center">
-
-        <h2 class="mb-3">
-            Are you a creator?
-        </h2>
-
-        <p class="text-muted mx-auto" style="max-width:600px;">
-            Are you a creator? We want you! Contact us for more information
-            
-        </p>
-
-        <a href="mailto:Collab@rsgsoftware.se"
-           class="btn btn-dark mt-3 px-5">
-            Contact Us
-        </a>
-
+        <h2 class="mb-3">Are you a creator?</h2>
+        <p class="text-muted mx-auto" style="max-width: 600px;">Are you a creator? We want you! Contact us for more information</p>
+        <a href="mailto:Collab@rsgsoftware.se" class="btn btn-dark mt-3 px-5">Contact Us</a>
     </div>
 </section>
 
-
 <footer class="py-4 text-center">
-
-    
-
-    <p class="text-muted mb-0">
-        © 2026 RSG Software. All rights reserved.
-    </p>
-
+    <p class="text-muted mb-0">© 2026 RSG Software. All rights reserved.</p>
 </footer>
-        
-        
-   
 
-    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
 </body>
-<script>
-function logout(){
-    localStorage.removeItem("loggedIn");
-    window.location.href = "/";
-}
-</script>
 </html>
