@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Newsletter | RSG Software</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
+    <div class="container">
+        <a class="navbar-brand" href="/"><strong>RSG</strong> Software</a>
+        <div class="ml-auto">
+            {% if session.get('logged_in') and session.get('username') == 'admin' %}
+                <a href="{{ url_for('views.admin_newsletter') }}" class="btn btn-sm btn-dark">Post new update</a>
+            {% endif %}
+            <a href="/" class="btn btn-sm btn-outline-dark ml-2">Back to Home</a>
+        </div>
+    </div>
+</nav>
+
+<div class="container py-5">
+    <h1 class="mb-4">RSG Newsletter</h1>
+
+    {% if posts %}
+        {% for post in posts %}
+            <div class="card mb-4 shadow-sm">
+                <div class="card-body">
+                    <h4>{{ post.title }}</h4>
+                    <p class="text-muted small">{{ post.date }}</p>
+                    <p>{{ post.content }}</p>
+                </div>
+            </div>
+        {% endfor %}
+    {% else %}
+        <p class="text-muted">No posts yet.</p>
+    {% endif %}
+</div>
+
+</body>
+</html>

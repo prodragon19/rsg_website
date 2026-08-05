@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Post Newsletter | RSG Software</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
+</head>
+<body class="bg-light">
+
+<div class="container" style="max-width: 600px; margin-top: 60px;">
+    <div class="card shadow">
+        <div class="card-body p-4">
+            <h3 class="mb-4">Post new newsletter update</h3>
+
+            <form method="POST">
+                <div class="form-group">
+                    <input type="text" name="title" class="form-control" placeholder="Title" required>
+                </div>
+                <div class="form-group">
+                    <textarea name="content" class="form-control" rows="6" placeholder="Write your update here..." required></textarea>
+                </div>
+                <button type="submit" class="btn btn-dark btn-block">Publish</button>
+            </form>
+
+            <a href="{{ url_for('views.newsletter') }}" class="btn btn-link mt-3">← Back to Newsletter</a>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
