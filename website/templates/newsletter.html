@@ -1,1 +1,56 @@
-<!doctype html><html><head><link rel="icon" type="image/png" href="{{ url_for('static', filename='rsgfav.png') }}"><title>Newsletter | RSG</title><link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"></head><body class="bg-light"><nav class="navbar navbar-light bg-white shadow-sm"><a class="navbar-brand" href="{{ url_for('views.home') }}"><strong>RSG</strong> Software</a><div>{% if session.get('logged_in') %}<a class="btn btn-dark btn-sm" href="{{ url_for('views.admin_newsletter') }}">Post update</a>{% endif %}<a class="btn btn-outline-dark btn-sm" href="{{ url_for('views.home') }}">Home</a></div></nav><main class="container py-5"><h1>RSG Newsletter</h1>{% for post in posts %}<article class="card shadow-sm mb-3"><div class="card-body"><h2 class="h4">{{ post.title }}</h2><small class="text-muted">By {{ post.author }} · {{ post.date_posted.strftime('%Y-%m-%d') }}</small>{% if post.image_filename %}<img class="img-fluid d-block my-3" src="{{ url_for('static',filename='uploads/' + post.image_filename) }}" alt="">{% endif %}<p style="white-space:pre-wrap">{{ post.content }}</p>{% if session.get('logged_in') %}<a class="btn btn-sm btn-warning" href="{{ url_for('views.edit_newsletter',post_id=post.id) }}">Edit</a><form class="d-inline" method="post" action="{{ url_for('views.delete_newsletter',post_id=post.id) }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn btn-sm btn-danger">Delete</button></form>{% endif %}</div></article>{% else %}<p class="text-muted">No newsletter posts yet.</p>{% endfor %}</main></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='rsgfav.png') }}">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Newsletter | RSG Software</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
+</head>
+<body class="bg-light">
+
+<nav class="navbar navbar-light bg-white shadow-sm">
+    <div class="container">
+        <a class="navbar-brand" href="{{ url_for('views.home') }}">
+            <strong>RSG</strong> Software
+        </a>
+        <div>
+            {% if session.get('logged_in') %}
+                <a class="btn btn-dark btn-sm" href="{{ url_for('admin.newsletter_list') }}">
+                    Manage Newsletter
+                </a>
+            {% endif %}
+            <a class="btn btn-outline-dark btn-sm" href="{{ url_for('views.home') }}">Home</a>
+        </div>
+    </div>
+</nav>
+
+<main class="container py-5">
+    <h1 class="mb-4">RSG Newsletter</h1>
+
+    {% if posts %}
+        {% for post in posts %}
+        <article class="card shadow-sm mb-4">
+            <div class="card-body">
+                <h2 class="h4">{{ post.title }}</h2>
+                <small class="text-muted">
+                    By {{ post.author }} · {{ post.date_posted.strftime('%Y-%m-%d') }}
+                </small>
+
+                {% if post.image_filename %}
+                    <img class="img-fluid d-block my-3 rounded"
+                         src="{{ url_for('static', filename='uploads/' + post.image_filename) }}"
+                         alt="{{ post.title }}">
+                {% endif %}
+
+                <p style="white-space: pre-wrap;">{{ post.content }}</p>
+            </div>
+        </article>
+        {% endfor %}
+    {% else %}
+        <p class="text-muted">No newsletter posts yet.</p>
+    {% endif %}
+</main>
+
+</body>
+</html>
