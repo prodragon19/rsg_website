@@ -4,9 +4,7 @@ import os
 
 from flask import Flask
 from sqlalchemy import inspect, text
-
 from flask_sqlalchemy import SQLAlchemy
-
 
 from .extensions import (
     bcrypt,
@@ -15,19 +13,11 @@ from .extensions import (
     limiter
 )
 
-
 db = SQLAlchemy()
 
 
 def upgrade_database_schema():
-    """Apply the small, backwards-compatible migrations needed by this app.
-
-    ``db.create_all()`` creates missing tables but deliberately does not add
-    columns to an existing database.  The deployed database predates
-    ``two_factor_secret``, which caused every query for an admin to fail with
-    a 500 error.  Keep this migration idempotent so existing Render disks are
-    repaired during application startup.
-    """
+    """Apply the small, backwards-compatible migrations needed by this app."""
     inspector = inspect(db.engine)
 
     if "admin_user" not in inspector.get_table_names():
@@ -36,6 +26,7 @@ def upgrade_database_schema():
     admin_columns = {column["name"] for column in inspector.get_columns("admin_user")}
     session_columns = {column["name"] for column in inspector.get_columns("admin_session")}
     customer_columns = {column["name"] for column in inspector.get_columns("customer")}
+
     with db.engine.begin() as connection:
         if "two_factor_secret" not in admin_columns:
             connection.execute(
@@ -43,11 +34,11 @@ def upgrade_database_schema():
             )
         if "unusual" not in session_columns:
             connection.execute(
-                text("ALTER TABLE admin_session ADD COLUMN unusual BOOLEAN DEFAULT 0")
+                text("ALTER TABLE admin_session ADD COLUMN unusual BOOLEAN DEFAULT false")
             )
         if "last_login" not in customer_columns:
             connection.execute(
-                text("ALTER TABLE customer ADD COLUMN last_login DATETIME")
+                text("ALTER TABLE customer ADD COLUMN last_login TIMESTAMP")
             )
 
 
@@ -74,8 +65,6 @@ def ensure_bootstrap_owner():
         )
         db.session.add(admin)
     else:
-        # The configured bootstrap account must always be able to reach the
-        # owner-only areas of the dashboard.
         admin.role = "Owner"
         admin.enabled = True
         if os.getenv("ADMIN_RESET_PASSWORD", "").lower() == "true":
@@ -84,98 +73,52 @@ def ensure_bootstrap_owner():
     db.session.commit()
 
 
-
 def create_app():
-
     app = Flask(__name__)
-
 
     app.config["SECRET_KEY"] = os.getenv(
         "SECRET_KEY", "development-only-change-this-secret"
     )
 
+    database_url = os.getenv("DATABASE_URL", "sqlite:///database.db")
 
-   database_url = os.getenv("DATABASE_URL", "sqlite:///database.db")
+    # Fix for Render + psycopg3
+    if database_url.startswith("postgres://"):
+        database_url = database_url.replace("postgres://", "postgresql+psycopg://", 1)
+    elif database_url.startswith("postgresql://"):
+        database_url = database_url.replace("postgresql://", "postgresql+psycopg://", 1)
 
-# Fix for Render + psycopg3
-if database_url.startswith("postgres://"):
-    database_url = database_url.replace("postgres://", "postgresql+psycopg://", 1)
-elif database_url.startswith("postgresql://"):
-    database_url = database_url.replace("postgresql://", "postgresql+psycopg://", 1)
-
-app.config["SQLALCHEMY_DATABASE_URI"] = database_url
-    )
-
+    app.config["SQLALCHEMY_DATABASE_URI"] = database_url
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
-
     app.config["SESSION_COOKIE_HTTPONLY"] = True
-
     app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
 
-
-
     db.init_app(app)
-
-
     bcrypt.init_app(app)
-
-
     login_manager.init_app(app)
-
     login_manager.login_view = "auth.admin_login"
-
-
-
     csrf.init_app(app)
-
-
     limiter.init_app(app)
-
-
 
     from .models import AdminUser
 
-
     @login_manager.user_loader
     def load_user(user_id):
-
-        return AdminUser.query.get(
-            int(user_id)
-        )
-
-
+        return AdminUser.query.get(int(user_id))
 
     from .views import views
-
-    app.register_blueprint(
-        views
-    )
-
-
+    app.register_blueprint(views)
 
     from .auth import auth
-
-    app.register_blueprint(
-        auth
-    )
-
-
+    app.register_blueprint(auth)
 
     from .admin import admin
-
-    app.register_blueprint(
-        admin
-    )
-
-
+    app.register_blueprint(admin)
 
     with app.app_context():
-
         db.create_all()
         upgrade_database_schema()
         ensure_bootstrap_owner()
-
-
 
     return app
