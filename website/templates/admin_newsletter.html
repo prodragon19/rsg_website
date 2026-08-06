@@ -14,13 +14,45 @@
         <div class="card-body p-4">
             <h3 class="mb-4">Post new newsletter update</h3>
 
-            <form method="POST">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <form method="POST" enctype="multipart/form-data">  <!-- �������� CRITICAL FOR FILE UPLOADS -->
+                <!-- AUTHOR FIELD -->
                 <div class="form-group">
+                    <label for="author">Your Name (Author)</label>
+                    <input type="text" name="author" class="form-control" placeholder="Your name" required>
+                </div>
+                
+                <!-- TITLE FIELD -->
+                <div class="form-group">
+                    <label for="title">Title</label>
                     <input type="text" name="title" class="form-control" placeholder="Title" required>
                 </div>
+                
+                <!-- IMAGE UPLOAD FIELD -->
                 <div class="form-group">
+                    <label for="image">Newsletter Image (Optional)</label>
+                    <input type="file" name="image" class="form-control-file" accept="image/*">
+                    <small class="form-text text-muted">Supported: JPG, PNG, GIF (Max 5MB)</small>
+                </div>
+                
+                <!-- CONTENT FIELD -->
+                <div class="form-group">
+                    <label for="content">Content</label>
                     <textarea name="content" class="form-control" rows="6" placeholder="Write your update here..." required></textarea>
                 </div>
+                
                 <button type="submit" class="btn btn-dark btn-block">Publish</button>
             </form>
 
