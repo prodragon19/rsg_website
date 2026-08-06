@@ -33,11 +33,21 @@ def upgrade_database_schema():
     if "admin_user" not in inspector.get_table_names():
         return
 
-    columns = {column["name"] for column in inspector.get_columns("admin_user")}
-    if "two_factor_secret" not in columns:
-        with db.engine.begin() as connection:
+    admin_columns = {column["name"] for column in inspector.get_columns("admin_user")}
+    session_columns = {column["name"] for column in inspector.get_columns("admin_session")}
+    customer_columns = {column["name"] for column in inspector.get_columns("customer")}
+    with db.engine.begin() as connection:
+        if "two_factor_secret" not in admin_columns:
             connection.execute(
                 text("ALTER TABLE admin_user ADD COLUMN two_factor_secret VARCHAR(255)")
+            )
+        if "unusual" not in session_columns:
+            connection.execute(
+                text("ALTER TABLE admin_session ADD COLUMN unusual BOOLEAN DEFAULT 0")
+            )
+        if "last_login" not in customer_columns:
+            connection.execute(
+                text("ALTER TABLE customer ADD COLUMN last_login DATETIME")
             )
 
 
@@ -68,6 +78,8 @@ def ensure_bootstrap_owner():
         # owner-only areas of the dashboard.
         admin.role = "Owner"
         admin.enabled = True
+        if os.getenv("ADMIN_RESET_PASSWORD", "").lower() == "true":
+            admin.password_hash = bcrypt.generate_password_hash(password).decode("utf-8")
 
     db.session.commit()
 
@@ -104,7 +116,7 @@ def create_app():
 
     login_manager.init_app(app)
 
-    login_manager.login_view = "auth.login"
+    login_manager.login_view = "auth.admin_login"
 
 
 

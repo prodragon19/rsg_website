@@ -44,8 +44,11 @@
             <!-- RIKTIG SERVER-SIDE LOGIN -->
             <div class="ml-lg-3 mt-3 mt-lg-0">
                 {% if session.get('logged_in') %}
-                    <span class="btn btn-success btn-sm mr-2">Logged in ({{ session.get('username') }})</span>
-                    <a href="{{ url_for('auth.logout') }}" class="btn btn-outline-dark btn-sm">Logout</a>
+                    <a href="{{ url_for('admin.dashboard') }}" class="btn btn-success btn-sm mr-2">Admin dashboard</a>
+                    <form method="post" action="{{ url_for('auth.logout') }}" class="d-inline"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn btn-outline-dark btn-sm">Logout</button></form>
+                {% elif session.get('customer_id') %}
+                    <span class="btn btn-success btn-sm mr-2">Logged in ({{ session.get('customer_name') }})</span>
+                    <form method="post" action="{{ url_for('auth.customer_logout') }}" class="d-inline"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn btn-outline-dark btn-sm">Logout</button></form>
                 {% else %}
                     <a href="{{ url_for('auth.login') }}" class="btn btn-outline-dark btn-sm mr-2">Login</a>
                     <a href="{{ url_for('auth.signup') }}" class="btn btn-dark btn-sm">Sign Up</a>
