@@ -1,5 +1,5 @@
 """Separate public customer authentication from privileged admin access."""
-
+from .email import send_welcome_email
 from datetime import datetime
 
 import pyotp
