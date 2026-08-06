@@ -1,40 +1,15 @@
-from flask import Blueprint, render_template
-
-views = Blueprint('views', __name__)
-
-# Startsida (stödjer både / och /Base pga felaktiga länkar i templates)
-@views.route('/')
-@views.route('/Base')
-@views.route('/Base ')
-def home():
-    return render_template('base.html')
-
-@views.route('/about')
-def about():
-    return render_template('about.html')
-
-@views.route('/aircraft')
-def aircraft():
-    return render_template('aircraft.html')
-
-@views.route('/contact')
-@views.route('/Contact')
-def contact():
-    return render_template('contact.html')
-
-@views.route('/work-at-rsg')
-def work_at_rsg():
-    return render_template('work-at-rsg.html')
-    from flask import Blueprint, render_template, request, redirect, url_for, session
+from flask import Blueprint, render_template, request, redirect, url_for, session, flash
 from datetime import datetime
 
+# �� SINGLE Blueprint definition (only one!)
 views = Blueprint('views', __name__)
 
-# Temporary storage (disappears when server restarts)
+# ========== TEMPORARY STORAGE (for demo - use DB in production) ==========
 POSTS = []
 
+# ========== PUBLIC ROUTES ==========
 @views.route('/')
-@views.route('/Base')
+@views.route('/Base')  # Remove the trailing space route ('/Base ') - it's unnecessary
 def home():
     return render_template('base.html')
 
@@ -55,27 +30,37 @@ def contact():
 def work_at_rsg():
     return render_template('work-at-rsg.html')
 
-# ========== NEWSLETTER ==========
-
+# ========== NEWSLETTER ROUTES ==========
 @views.route('/newsletter')
 def newsletter():
     return render_template('newsletter.html', posts=POSTS)
 
 @views.route('/admin/newsletter', methods=['GET', 'POST'])
 def admin_newsletter():
-    # Only allow admin
+    # ��� Admin protection (requires SECRET_KEY to be set in app factory)
     if not session.get('logged_in') or session.get('username') != 'admin':
-        return redirect(url_for('auth.login'))
+        flash('Admin access required', 'error')
+        return redirect(url_for('views.home'))  # Redirect to home instead of login (adjust as needed)
 
     if request.method == 'POST':
-        title = request.form.get('title')
-        content = request.form.get('content')
+        title = request.form.get('title', '').strip()
+        content = request.form.get('content', '').strip()
 
+        # �� CRITICAL VALIDATION (prevents empty posts)
+        if not title:
+            flash('Title is required!', 'error')
+            return redirect(url_for('views.admin_newsletter'))
+        if not content:
+            flash('Content is required!', 'error')
+            return redirect(url_for('views.admin_newsletter'))
+
+        # Add post with validation
         POSTS.insert(0, {
             "title": title,
             "content": content,
             "date": datetime.now().strftime("%Y-%m-%d %H:%M")
         })
+        flash('Newsletter posted successfully!', 'success')
         return redirect(url_for('views.newsletter'))
 
     return render_template('admin_newsletter.html')
