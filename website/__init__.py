@@ -1,35 +1,61 @@
-# website/__init__.py
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 
-db = SQLAlchemy()  # ← DEFINED FIRST (avoids circular imports)
+from .extensions import (
+    bcrypt,
+    login_manager,
+    csrf,
+    limiter
+)
+
+db = SQLAlchemy()
+
 
 def create_app():
+
     app = Flask(__name__)
-    import os  # ← ONLY IMPORT NEEDED
-    
-    # �������������������������� PURE ENV VARS (WORKS EVERYWHERE)
-    app.secret_key = os.environ.get('SECRET_KEY')
-    app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get(
-        'DATABASE_URL', 
-        'sqlite:///app.db'  # Fallback for local dev
-    )
-    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-    
+
+
+    app.config["SECRET_KEY"] = "CHANGE_THIS_TO_A_RANDOM_SECRET"
+
+
+    app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///database.db"
+
+    app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+
+
+    app.config["SESSION_COOKIE_HTTPONLY"] = True
+    app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
+
+
     db.init_app(app)
-    
-    # �������������������������� CREATE UPLOADS DIRECTORY (APP-LEVEL)
-    uploads_dir = os.path.join(app.root_path, 'static', 'uploads')
-    os.makedirs(uploads_dir, exist_ok=True)
-    
-    # �������������������������� NOW SAFE TO IMPORT BLUEPRINTS
+
+    bcrypt.init_app(app)
+
+    login_manager.init_app(app)
+
+    csrf.init_app(app)
+
+    limiter.init_app(app)
+
+
+    login_manager.login_view = "auth.login"
+
+
     from .views import views
+    app.register_blueprint(views)
+
+
     from .auth import auth
-    
-    app.register_blueprint(views, url_prefix='/')
-    app.register_blueprint(auth, url_prefix='/')
-    
+    app.register_blueprint(auth)
+
+
+    from .admin import admin
+    app.register_blueprint(admin)
+
+
     with app.app_context():
         db.create_all()
-    
+
+
     return app

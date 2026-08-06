@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+<title>Devices</title>
+
+<link rel="stylesheet"
+href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
+
+</head>
+
+
+<body>
+
+
+<div class="container mt-5">
+
+
+<h1>
+Login Devices
+</h1>
+
+
+
+<table class="table">
+
+
+<tr>
+
+<th>
+IP
+</th>
+
+<th>
+Browser
+</th>
+
+<th>
+OS
+</th>
+
+<th>
+Device
+</th>
+
+<th>
+Last Active
+</th>
+
+</tr>
+
+
+
+{% for device in sessions %}
+
+
+<tr>
+
+<td>
+{{ device.ip_address }}
+</td>
+
+<td>
+{{ device.browser }}
+</td>
+
+<td>
+{{ device.operating_system }}
+</td>
+
+<td>
+{{ device.device_type }}
+</td>
+
+<td>
+{{ device.last_active }}
+</td>
+
+
+</tr>
+
+
+{% endfor %}
+
+
+</table>
+
+
+</div>
+
+
+</body>
+
+</html>

@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+<title>Admin Dashboard</title>
+
+<link rel="stylesheet"
+href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
+
+</head>
+
+
+<body>
+
+
+<nav class="navbar navbar-dark bg-dark">
+
+<a class="navbar-brand">
+RSG Admin
+</a>
+
+</nav>
+
+
+
+<div class="container mt-5">
+
+
+<h1>
+Dashboard
+</h1>
+
+
+
+<div class="row mt-4">
+
+
+<div class="col-md-4">
+
+<div class="card shadow">
+
+<div class="card-body">
+
+<h5>
+Admins
+</h5>
+
+<h2>
+{{ total_admins }}
+</h2>
+
+</div>
+
+</div>
+
+</div>
+
+
+
+<div class="col-md-4">
+
+<div class="card shadow">
+
+<div class="card-body">
+
+<h5>
+Active Sessions
+</h5>
+
+<h2>
+{{ active_sessions }}
+</h2>
+
+</div>
+
+</div>
+
+</div>
+
+
+</div>
+
+
+
+<hr>
+
+
+
+<h3>
+Recent Activity
+</h3>
+
+
+{% for log in logs %}
+
+<div class="card mb-2">
+
+<div class="card-body">
+
+{{ log.action }}
+
+<br>
+
+<small>
+{{ log.created_at }}
+</small>
+
+
+</div>
+
+</div>
+
+
+{% else %}
+
+<p>
+No activity yet.
+</p>
+
+{% endfor %}
+
+
+
+</div>
+
+
+</body>
+
+</html>
