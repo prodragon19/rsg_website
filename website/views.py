@@ -1,4 +1,5 @@
-from flask import Blueprint, render_template, request, redirect, url_for, session, flash
+# website/views.py
+from flask import Blueprint, render_template, request, redirect, url_for, session, flash, current_app
 from datetime import datetime
 import os
 from werkzeug.utils import secure_filename
@@ -7,8 +8,8 @@ from .models import NewsletterPost  # Import our newsletter model
 
 views = Blueprint('views', __name__)
 
-# �������������� IMAGE UPLOAD CONFIGURATION
-UPLOAD_FOLDER = 'static/uploads'
+# ������������������ IMAGE UPLOAD CONFIGURATION (KEEP THESE CONSTANTS)
+UPLOAD_FOLDER = 'static/uploads'  # ← RELATIVE PATH (we'll resolve it with current_app)
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 MAX_FILE_SIZE = 5 * 1024 * 1024  # 5MB
 
@@ -16,13 +17,7 @@ def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-# �������������� ENSURE UPLOADS DIRECTORY EXISTS ON STARTUP
-@views.before_app_first_request
-def create_uploads_folder():
-    os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-    print(f"����������� Uploads directory ready: {os.path.abspath(UPLOAD_FOLDER)}")
-
-# ========== PUBLIC ROUTES (UNCHANGED FROM YOUR ORIGINAL) ==========
+# ========== PUBLIC ROUTES (UNCHANGED) ==========
 @views.route('/')
 @views.route('/Base')
 def home():
@@ -48,19 +43,16 @@ def work_at_rsg():
 # ========== NEWSLETTER ROUTES (FULLY IMPLEMENTED) ==========
 @views.route('/newsletter')
 def newsletter():
-    # Fetch all posts from database (newest first)
     posts = NewsletterPost.query.order_by(NewsletterPost.date_posted.desc()).all()
     return render_template('newsletter.html', posts=posts)
 
 @views.route('/newsletter/<int:post_id>')
 def newsletter_detail(post_id):
-    # Show single post with full details
     post = NewsletterPost.query.get_or_404(post_id)
     return render_template('newsletter_detail.html', post=post)
 
 @views.route('/admin/newsletter', methods=['GET', 'POST'])
 def admin_newsletter():
-    # Admin protection
     if not session.get('logged_in') or session.get('username') != 'admin':
         flash('Admin access required', 'error')
         return redirect(url_for('views.home'))
@@ -88,8 +80,11 @@ def admin_newsletter():
                 filename = secure_filename(file.filename)
                 timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
                 image_filename = f"{timestamp}_{filename}"
-                os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-                file.save(os.path.join(UPLOAD_FOLDER, image_filename))
+                
+                # Get absolute upload path from app config
+                upload_path = os.path.join(current_app.root_path, UPLOAD_FOLDER)
+                os.makedirs(upload_path, exist_ok=True)  # Ensure dir exists
+                file.save(os.path.join(upload_path, image_filename))
 
         # Validate required fields
         if not title:
@@ -116,7 +111,6 @@ def admin_newsletter():
 
 @views.route('/newsletter/<int:post_id>/edit', methods=['GET', 'POST'])
 def edit_newsletter(post_id):
-    # Admin protection
     if not session.get('logged_in') or session.get('username') != 'admin':
         flash('Admin access required', 'error')
         return redirect(url_for('views.home'))
@@ -143,7 +137,7 @@ def edit_newsletter(post_id):
                 
                 # Delete old image if exists
                 if post.image_filename:
-                    old_path = os.path.join(UPLOAD_FOLDER, post.image_filename)
+                    old_path = os.path.join(current_app.root_path, UPLOAD_FOLDER, post.image_filename)
                     if os.path.exists(old_path):
                         os.remove(old_path)
                 
@@ -151,8 +145,10 @@ def edit_newsletter(post_id):
                 filename = secure_filename(file.filename)
                 timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
                 post.image_filename = f"{timestamp}_{filename}"
-                os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-                file.save(os.path.join(UPLOAD_FOLDER, post.image_filename))
+                
+                upload_path = os.path.join(current_app.root_path, UPLOAD_FOLDER)
+                os.makedirs(upload_path, exist_ok=True)  # Ensure dir exists
+                file.save(os.path.join(upload_path, post.image_filename))
         
         # Validate
         if not post.title or not post.content:
@@ -167,7 +163,6 @@ def edit_newsletter(post_id):
 
 @views.route('/newsletter/<int:post_id>/delete', methods=['POST'])
 def delete_newsletter(post_id):
-    # Admin protection
     if not session.get('logged_in') or session.get('username') != 'admin':
         flash('Admin access required', 'error')
         return redirect(url_for('views.home'))
@@ -176,7 +171,7 @@ def delete_newsletter(post_id):
     
     # Delete associated image file
     if post.image_filename:
-        image_path = os.path.join(UPLOAD_FOLDER, post.image_filename)
+        image_path = os.path.join(current_app.root_path, UPLOAD_FOLDER, post.image_filename)
         if os.path.exists(image_path):
             os.remove(image_path)
     

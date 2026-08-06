@@ -8,7 +8,7 @@ def create_app():
     app = Flask(__name__)
     import os  # ← ONLY IMPORT NEEDED
     
-    # ������������������������ PURE ENV VARS (WORKS EVERYWHERE)
+    # �������������������������� PURE ENV VARS (WORKS EVERYWHERE)
     app.secret_key = os.environ.get('SECRET_KEY')
     app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get(
         'DATABASE_URL', 
@@ -18,7 +18,11 @@ def create_app():
     
     db.init_app(app)
     
-    # ������������������������ NOW SAFE TO IMPORT BLUEPRINTS
+    # �������������������������� CREATE UPLOADS DIRECTORY (APP-LEVEL)
+    uploads_dir = os.path.join(app.root_path, 'static', 'uploads')
+    os.makedirs(uploads_dir, exist_ok=True)
+    
+    # �������������������������� NOW SAFE TO IMPORT BLUEPRINTS
     from .views import views
     from .auth import auth
     
