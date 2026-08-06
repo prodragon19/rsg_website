@@ -264,3 +264,75 @@ def logout_all_devices(id):
 @admin_required("Admin")
 def logs():
     return render_template("admin/audit_logs.html", logs=AuditLog.query.order_by(AuditLog.created_at.desc()).limit(500).all())
+from ..models import NewsletterPost   # add this import at the top with the others
+from werkzeug.utils import secure_filename
+import os
+from datetime import datetime
+
+UPLOAD_FOLDER = "static/uploads"
+ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif"}
+
+def allowed_file(filename):
+    return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
+
+
+@admin.route("/newsletter")
+@admin_required()
+def newsletter_list():
+    posts = NewsletterPost.query.order_by(NewsletterPost.date_posted.desc()).all()
+    return render_template("admin/newsletter_list.html", posts=posts)
+
+
+@admin.route("/newsletter/new", methods=["GET", "POST"])
+@admin_required()
+def newsletter_new():
+    if request.method == "POST":
+        title = request.form.get("title", "").strip()
+        content = request.form.get("content", "").strip()
+        author = session.get("username", "Admin")
+
+        if not title or not content:
+            flash("Title and content are required.", "danger")
+            return redirect(url_for("admin.newsletter_new"))
+
+        image_filename = None
+        if "image" in request.files:
+            file = request.files["image"]
+            if file and file.filename and allowed_file(file.filename):
+                filename = secure_filename(file.filename)
+                timestamp = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
+                image_filename = f"{timestamp}_{filename}"
+                upload_path = os.path.join(current_app.root_path, UPLOAD_FOLDER)
+                os.makedirs(upload_path, exist_ok=True)
+                file.save(os.path.join(upload_path, image_filename))
+
+        post = NewsletterPost(
+            title=title,
+            content=content,
+            author=author,
+            image_filename=image_filename
+        )
+        db.session.add(post)
+        audit(f"{session['username']} created newsletter post", title)
+        db.session.commit()
+        flash("Newsletter published!", "success")
+        return redirect(url_for("admin.newsletter_list"))
+
+    return render_template("admin/newsletter_form.html")
+
+
+@admin.route("/newsletter/<int:id>/delete", methods=["POST"])
+@admin_required()
+def newsletter_delete(id):
+    post = db.get_or_404(NewsletterPost, id)
+
+    if post.image_filename:
+        path = os.path.join(current_app.root_path, UPLOAD_FOLDER, post.image_filename)
+        if os.path.exists(path):
+            os.remove(path)
+
+    audit(f"{session['username']} deleted newsletter post", post.title)
+    db.session.delete(post)
+    db.session.commit()
+    flash("Post deleted.", "success")
+    return redirect(url_for("admin.newsletter_list"))
