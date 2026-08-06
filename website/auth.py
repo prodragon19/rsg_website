@@ -75,9 +75,11 @@ def create_device_session(admin):
 
 
 
-# ======================
+
+
+# =========================
 # LOGIN
-# ======================
+# =========================
 
 @auth.route(
     "/login",
@@ -86,6 +88,7 @@ def create_device_session(admin):
 def login():
 
     if request.method == "POST":
+
 
         username = request.form.get(
             "username"
@@ -96,9 +99,11 @@ def login():
         )
 
 
+
         admin = AdminUser.query.filter_by(
             username=username
         ).first()
+
 
 
         if not admin:
@@ -113,6 +118,7 @@ def login():
             )
 
 
+
         if not admin.enabled:
 
             flash(
@@ -123,6 +129,7 @@ def login():
             return redirect(
                 url_for("auth.login")
             )
+
 
 
         if bcrypt.check_password_hash(
@@ -140,7 +147,9 @@ def login():
             session["role"] = admin.role
 
 
+
             admin.last_login = datetime.utcnow()
+
 
 
             create_device_session(
@@ -157,6 +166,7 @@ def login():
             db.session.commit()
 
 
+
             return redirect(
                 url_for(
                     "admin.dashboard"
@@ -164,10 +174,12 @@ def login():
             )
 
 
+
         flash(
             "Invalid username or password",
             "danger"
         )
+
 
 
     return render_template(
@@ -178,9 +190,11 @@ def login():
 
 
 
-# ======================
-# CREATE FIRST OWNER
-# ======================
+
+
+# =========================
+# FIRST OWNER CREATION
+# =========================
 
 @auth.route(
     "/signup",
@@ -189,18 +203,19 @@ def login():
 def signup():
 
 
-    existing = AdminUser.query.count()
+    # Disable after first admin exists
 
-
-    if existing > 0:
+    if AdminUser.query.count() > 0:
 
         flash(
-            "Signup disabled. Create admins from dashboard.",
+            "Signup disabled",
             "danger"
         )
 
         return redirect(
-            url_for("auth.login")
+            url_for(
+                "auth.login"
+            )
         )
 
 
@@ -212,9 +227,11 @@ def signup():
             "username"
         )
 
+
         email = request.form.get(
             "email"
         )
+
 
         password = request.form.get(
             "password"
@@ -230,7 +247,9 @@ def signup():
             )
 
             return redirect(
-                url_for("auth.signup")
+                url_for(
+                    "auth.signup"
+                )
             )
 
 
@@ -251,7 +270,9 @@ def signup():
 
             password_hash=password_hash,
 
-            role="Owner"
+            role="Owner",
+
+            enabled=True
 
         )
 
@@ -266,13 +287,16 @@ def signup():
 
 
         flash(
-            "Owner account created. Login now.",
+            "Owner account created",
             "success"
         )
 
 
+
         return redirect(
-            url_for("auth.login")
+            url_for(
+                "auth.login"
+            )
         )
 
 
@@ -286,9 +310,11 @@ def signup():
 
 
 
-# ======================
+
+
+# =========================
 # LOGOUT
-# ======================
+# =========================
 
 @auth.route(
     "/logout"
@@ -303,7 +329,9 @@ def logout():
 
         create_audit(
             "Admin logged out",
-            session.get("username")
+            session.get(
+                "username"
+            )
         )
 
 
@@ -314,7 +342,9 @@ def logout():
     session.clear()
 
 
+
     return redirect(
         url_for(
             "views.home"
-        )x
+        )
+    )
