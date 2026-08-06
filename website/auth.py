@@ -14,6 +14,11 @@ from datetime import datetime
 
 from user_agents import parse
 
+from flask_login import (
+    login_user,
+    logout_user
+)
+
 from . import db
 
 from .models import (
@@ -25,14 +30,11 @@ from .models import (
 from .extensions import bcrypt
 
 
-
 auth = Blueprint(
     "auth",
     __name__,
     url_prefix="/auth"
 )
-
-
 
 
 
@@ -50,15 +52,16 @@ def create_audit(action, target=None):
 
 
 
-
 def create_device_session(admin):
 
     user_agent = request.headers.get(
-        "User-Agent"
+        "User-Agent",
+        ""
     )
 
-
-    parsed = parse(user_agent)
+    parsed = parse(
+        user_agent
+    )
 
 
     device = AdminSession(
@@ -77,7 +80,6 @@ def create_device_session(admin):
 
 
     db.session.add(device)
-
 
 
 
@@ -102,7 +104,6 @@ def login():
         )
 
 
-
         admin = AdminUser.query.filter_by(
             username=username
         ).first()
@@ -111,12 +112,10 @@ def login():
 
         if not admin:
 
-
             flash(
                 "Invalid username or password",
                 "danger"
             )
-
 
             return redirect(
                 url_for("auth.login")
@@ -125,15 +124,12 @@ def login():
 
 
 
-
         if not admin.enabled:
-
 
             flash(
                 "Account disabled",
                 "danger"
             )
-
 
             return redirect(
                 url_for("auth.login")
@@ -148,6 +144,10 @@ def login():
             password
         ):
 
+
+            login_user(
+                admin
+            )
 
 
             session["logged_in"] = True
@@ -175,7 +175,6 @@ def login():
             )
 
 
-
             db.session.commit()
 
 
@@ -185,7 +184,6 @@ def login():
                     "admin.dashboard"
                 )
             )
-
 
 
 
@@ -205,9 +203,9 @@ def login():
 
 
 
-
-
-@auth.route("/logout")
+@auth.route(
+    "/logout"
+)
 def logout():
 
 
@@ -224,6 +222,9 @@ def logout():
 
         db.session.commit()
 
+
+
+    logout_user()
 
 
     session.clear()
