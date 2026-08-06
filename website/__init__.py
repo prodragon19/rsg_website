@@ -36,18 +36,22 @@ def create_app():
 
 
 
-
     db.init_app(app)
 
 
     bcrypt.init_app(app)
 
 
+    login_manager.init_app(app)
+
+    login_manager.login_view = "auth.login"
+
+
+
     csrf.init_app(app)
 
 
     limiter.init_app(app)
-
 
 
 
@@ -60,15 +64,6 @@ def create_app():
         return AdminUser.query.get(
             int(user_id)
         )
-
-
-
-    login_manager.init_app(app)
-
-
-    login_manager.login_view = "auth.login"
-
-
 
 
 
@@ -93,8 +88,6 @@ def create_app():
     app.register_blueprint(
         admin
     )
-
-
 
 
 
