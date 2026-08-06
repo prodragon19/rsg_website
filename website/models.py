@@ -168,6 +168,11 @@ class AdminSession(db.Model):
         default=True
     )
 
+    unusual = db.Column(
+        db.Boolean,
+        default=False
+    )
+
 
 
 
@@ -244,6 +249,10 @@ class Customer(db.Model):
     created_at = db.Column(
         db.DateTime,
         default=datetime.utcnow
+    )
+
+    last_login = db.Column(
+        db.DateTime
     )
 
 
