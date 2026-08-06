@@ -14,11 +14,6 @@ from datetime import datetime
 
 from user_agents import parse
 
-from flask_login import (
-    login_user,
-    logout_user
-)
-
 from . import db
 
 from .models import (
@@ -51,7 +46,6 @@ def create_audit(action, target=None):
 
 
 
-
 def create_device_session(admin):
 
     user_agent = request.headers.get(
@@ -59,9 +53,7 @@ def create_device_session(admin):
         ""
     )
 
-    parsed = parse(
-        user_agent
-    )
+    parsed = parse(user_agent)
 
 
     device = AdminSession(
@@ -83,7 +75,9 @@ def create_device_session(admin):
 
 
 
-
+# ======================
+# LOGIN
+# ======================
 
 @auth.route(
     "/login",
@@ -91,9 +85,7 @@ def create_device_session(admin):
 )
 def login():
 
-
     if request.method == "POST":
-
 
         username = request.form.get(
             "username"
@@ -109,7 +101,6 @@ def login():
         ).first()
 
 
-
         if not admin:
 
             flash(
@@ -120,8 +111,6 @@ def login():
             return redirect(
                 url_for("auth.login")
             )
-
-
 
 
         if not admin.enabled:
@@ -136,18 +125,10 @@ def login():
             )
 
 
-
-
-
         if bcrypt.check_password_hash(
             admin.password_hash,
             password
         ):
-
-
-            login_user(
-                admin
-            )
 
 
             session["logged_in"] = True
@@ -159,9 +140,7 @@ def login():
             session["role"] = admin.role
 
 
-
             admin.last_login = datetime.utcnow()
-
 
 
             create_device_session(
@@ -178,7 +157,6 @@ def login():
             db.session.commit()
 
 
-
             return redirect(
                 url_for(
                     "admin.dashboard"
@@ -186,12 +164,10 @@ def login():
             )
 
 
-
         flash(
             "Invalid username or password",
             "danger"
         )
-
 
 
     return render_template(
@@ -202,6 +178,117 @@ def login():
 
 
 
+# ======================
+# CREATE FIRST OWNER
+# ======================
+
+@auth.route(
+    "/signup",
+    methods=["GET", "POST"]
+)
+def signup():
+
+
+    existing = AdminUser.query.count()
+
+
+    if existing > 0:
+
+        flash(
+            "Signup disabled. Create admins from dashboard.",
+            "danger"
+        )
+
+        return redirect(
+            url_for("auth.login")
+        )
+
+
+
+    if request.method == "POST":
+
+
+        username = request.form.get(
+            "username"
+        )
+
+        email = request.form.get(
+            "email"
+        )
+
+        password = request.form.get(
+            "password"
+        )
+
+
+
+        if not username or not email or not password:
+
+            flash(
+                "Fill all fields",
+                "danger"
+            )
+
+            return redirect(
+                url_for("auth.signup")
+            )
+
+
+
+        password_hash = bcrypt.generate_password_hash(
+            password
+        ).decode(
+            "utf-8"
+        )
+
+
+
+        admin = AdminUser(
+
+            username=username,
+
+            email=email,
+
+            password_hash=password_hash,
+
+            role="Owner"
+
+        )
+
+
+
+        db.session.add(
+            admin
+        )
+
+        db.session.commit()
+
+
+
+        flash(
+            "Owner account created. Login now.",
+            "success"
+        )
+
+
+        return redirect(
+            url_for("auth.login")
+        )
+
+
+
+    return render_template(
+        "admin/signup.html"
+    )
+
+
+
+
+
+
+# ======================
+# LOGOUT
+# ======================
 
 @auth.route(
     "/logout"
@@ -224,15 +311,10 @@ def logout():
 
 
 
-    logout_user()
-
-
     session.clear()
-
 
 
     return redirect(
         url_for(
             "views.home"
-        )
-    )
+        )x
