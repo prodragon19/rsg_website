@@ -1,6 +1,9 @@
 # website/__init__.py
 
+import os
+
 from flask import Flask
+from sqlalchemy import inspect, text
 
 from flask_sqlalchemy import SQLAlchemy
 
@@ -16,16 +19,73 @@ from .extensions import (
 db = SQLAlchemy()
 
 
+def upgrade_database_schema():
+    """Apply the small, backwards-compatible migrations needed by this app.
+
+    ``db.create_all()`` creates missing tables but deliberately does not add
+    columns to an existing database.  The deployed database predates
+    ``two_factor_secret``, which caused every query for an admin to fail with
+    a 500 error.  Keep this migration idempotent so existing Render disks are
+    repaired during application startup.
+    """
+    inspector = inspect(db.engine)
+
+    if "admin_user" not in inspector.get_table_names():
+        return
+
+    columns = {column["name"] for column in inspector.get_columns("admin_user")}
+    if "two_factor_secret" not in columns:
+        with db.engine.begin() as connection:
+            connection.execute(
+                text("ALTER TABLE admin_user ADD COLUMN two_factor_secret VARCHAR(255)")
+            )
+
+
+def ensure_bootstrap_owner():
+    """Create the configured initial owner without storing credentials in git."""
+    username = os.getenv("ADMIN_USERNAME")
+    password = os.getenv("ADMIN_PASSWORD")
+
+    if not username or not password:
+        return
+
+    from .extensions import bcrypt
+    from .models import AdminUser
+
+    admin = AdminUser.query.filter_by(username=username).first()
+    if admin is None:
+        email = os.getenv("ADMIN_EMAIL", f"{username}@rsgsoftware.com")
+        admin = AdminUser(
+            username=username,
+            email=email,
+            password_hash=bcrypt.generate_password_hash(password).decode("utf-8"),
+            role="Owner",
+            enabled=True,
+        )
+        db.session.add(admin)
+    else:
+        # The configured bootstrap account must always be able to reach the
+        # owner-only areas of the dashboard.
+        admin.role = "Owner"
+        admin.enabled = True
+
+    db.session.commit()
+
+
 
 def create_app():
 
     app = Flask(__name__)
 
 
-    app.config["SECRET_KEY"] = "CHANGE_THIS_TO_A_RANDOM_SECRET"
+    app.config["SECRET_KEY"] = os.getenv(
+        "SECRET_KEY", "development-only-change-this-secret"
+    )
 
 
-    app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///database.db"
+    app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv(
+        "DATABASE_URL", "sqlite:///database.db"
+    )
 
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
@@ -94,6 +154,8 @@ def create_app():
     with app.app_context():
 
         db.create_all()
+        upgrade_database_schema()
+        ensure_bootstrap_owner()
 
 
 
