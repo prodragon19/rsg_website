@@ -43,7 +43,7 @@ def upgrade_database_schema():
 
 
 def ensure_bootstrap_owner():
-    """Create the configured initial owner without storing credentials in git."""
+    """Create or update the configured initial owner."""
     username = os.getenv("ADMIN_USERNAME")
     password = os.getenv("ADMIN_PASSWORD")
 
@@ -53,9 +53,14 @@ def ensure_bootstrap_owner():
     from .extensions import bcrypt
     from .models import AdminUser
 
+    email = os.getenv("ADMIN_EMAIL", f"{username}@rsgsoftware.com").lower()
+
+    # Hitta befintlig admin via username ELLER email
     admin = AdminUser.query.filter_by(username=username).first()
     if admin is None:
-        email = os.getenv("ADMIN_EMAIL", f"{username}@rsgsoftware.com")
+        admin = AdminUser.query.filter_by(email=email).first()
+
+    if admin is None:
         admin = AdminUser(
             username=username,
             email=email,
@@ -65,6 +70,8 @@ def ensure_bootstrap_owner():
         )
         db.session.add(admin)
     else:
+        admin.username = username
+        admin.email = email
         admin.role = "Owner"
         admin.enabled = True
         if os.getenv("ADMIN_RESET_PASSWORD", "").lower() == "true":
