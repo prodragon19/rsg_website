@@ -110,7 +110,6 @@ def logout():
 @auth.route("/signup", methods=["GET", "POST"])
 @limiter.limit("5 per hour", methods=["POST"])
 def signup():
-    """Public signup creates a customer account only—never an administrator."""
     if request.method == "POST":
         name = request.form.get("name", "").strip()
         email = request.form.get("email", "").strip().lower()
@@ -127,10 +126,7 @@ def signup():
             )
             db.session.add(customer)
             db.session.commit()
-
-            # Skicka välkomstmail
             send_welcome_email(email, name)
-
             session.clear()
             session.update({
                 "customer_id": customer.id,
@@ -171,7 +167,9 @@ def customer_login():
 def customer_logout():
     session.clear()
     return redirect(url_for("views.home"))
-    @auth.route("/account")
+
+
+@auth.route("/account")
 def account():
     if not session.get("customer_id"):
         flash("Please log in first.", "warning")
@@ -182,7 +180,7 @@ def account():
         session.clear()
         return redirect(url_for("auth.login"))
 
-    orders = customer.orders  # från relationship i models.py
+    orders = customer.orders
     return render_template("account.html", customer=customer, orders=orders)
 
 
