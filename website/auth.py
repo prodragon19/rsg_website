@@ -171,3 +171,58 @@ def customer_login():
 def customer_logout():
     session.clear()
     return redirect(url_for("views.home"))
+    @auth.route("/account")
+def account():
+    if not session.get("customer_id"):
+        flash("Please log in first.", "warning")
+        return redirect(url_for("auth.login"))
+
+    customer = db.session.get(Customer, session["customer_id"])
+    if not customer:
+        session.clear()
+        return redirect(url_for("auth.login"))
+
+    orders = customer.orders  # från relationship i models.py
+    return render_template("account.html", customer=customer, orders=orders)
+
+
+@auth.route("/account/settings", methods=["GET", "POST"])
+def account_settings():
+    if not session.get("customer_id"):
+        flash("Please log in first.", "warning")
+        return redirect(url_for("auth.login"))
+
+    customer = db.session.get(Customer, session["customer_id"])
+    if not customer:
+        session.clear()
+        return redirect(url_for("auth.login"))
+
+    if request.method == "POST":
+        name = request.form.get("name", "").strip()
+        email = request.form.get("email", "").strip().lower()
+        current_password = request.form.get("current_password", "")
+        new_password = request.form.get("new_password", "")
+
+        if not name or not email:
+            flash("Name and email are required.", "danger")
+        elif email != customer.email and Customer.query.filter_by(email=email).first():
+            flash("That email is already in use.", "danger")
+        else:
+            customer.name = name
+            customer.email = email
+            session["customer_name"] = name
+
+            if new_password:
+                if not bcrypt.check_password_hash(customer.password_hash, current_password):
+                    flash("Current password is incorrect.", "danger")
+                    return redirect(url_for("auth.account_settings"))
+                if len(new_password) < 8:
+                    flash("New password must be at least 8 characters.", "danger")
+                    return redirect(url_for("auth.account_settings"))
+                customer.password_hash = bcrypt.generate_password_hash(new_password).decode("utf-8")
+
+            db.session.commit()
+            flash("Account updated successfully.", "success")
+            return redirect(url_for("auth.account"))
+
+    return render_template("account_settings.html", customer=customer)

@@ -32,12 +32,25 @@
                 <li class="nav-item"><a class="nav-link" href="/about">About</a></li>
                 <li class="nav-item"><a class="nav-link" href="/work-at-rsg">Work at RSG</a></li>
                 <li class="nav-item"><a class="nav-link active" href="/contact">Contact</a></li>
-                <li class="nav-item"><a class="nav-link" href="/newsletter">newsletter</a></li>
+                <li class="nav-item"><a class="nav-link" href="/newsletter">Newsletter</a></li>
             </ul>
             <div class="ml-lg-3 mt-3 mt-lg-0">
-                {% if session.get('logged_in') %}<a href="{{ url_for('admin.dashboard') }}" class="btn btn-success btn-sm mr-2">Admin dashboard</a><form method="post" action="{{ url_for('auth.logout') }}" class="d-inline"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn btn-outline-dark btn-sm">Logout</button></form>
-                {% elif session.get('customer_id') %}<span class="btn btn-success btn-sm mr-2">Logged in ({{ session.get('customer_name') }})</span><form method="post" action="{{ url_for('auth.customer_logout') }}" class="d-inline"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn btn-outline-dark btn-sm">Logout</button></form>
-                {% else %}<a href="{{ url_for('auth.login') }}" class="btn btn-outline-dark btn-sm mr-2">Login</a><a href="{{ url_for('auth.signup') }}" class="btn btn-dark btn-sm">Sign Up</a>{% endif %}
+                {% if session.get('logged_in') %}
+                    <a href="{{ url_for('admin.dashboard') }}" class="btn btn-success btn-sm mr-2">Admin dashboard</a>
+                    <form method="post" action="{{ url_for('auth.logout') }}" class="d-inline">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button class="btn btn-outline-dark btn-sm">Logout</button>
+                    </form>
+                {% elif session.get('customer_id') %}
+                    <a href="{{ url_for('auth.account') }}" class="btn btn-success btn-sm mr-2">My Account ({{ session.get('customer_name') }})</a>
+                    <form method="post" action="{{ url_for('auth.customer_logout') }}" class="d-inline">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button class="btn btn-outline-dark btn-sm">Logout</button>
+                    </form>
+                {% else %}
+                    <a href="{{ url_for('auth.login') }}" class="btn btn-outline-dark btn-sm mr-2">Login</a>
+                    <a href="{{ url_for('auth.signup') }}" class="btn btn-dark btn-sm">Sign Up</a>
+                {% endif %}
             </div>
         </div>
     </div>
@@ -57,11 +70,10 @@
                 <h4 class="mb-3">Do you need support? Or have any questions?</h4>
                 <p>
                     Send an email to <strong>support@rsgsoftware.site</strong><br><br>
-                    Alternatively, you can reach us through any of our social media found below. 
+                    Alternatively, you can reach us through any of our social media found below.
                     We appreciate your interest in us and look forward to hearing from you!<br><br>
                     Support is open every day!
                 </p>
-
                 <div class="mt-4">
                     <a href="https://discord.gg/4MSbErJwec" target="_blank" rel="noopener">
                         <img src="https://cdn.simpleicons.org/discord/5865F2" width="48" alt="Discord">
@@ -73,7 +85,4 @@
 </div>
 
 <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
-</body>
-</html>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/

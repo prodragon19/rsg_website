@@ -6,16 +6,28 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Who are we? | RSG Software</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <style>
         .page-header {
-            background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
+            background: linear-gradient(rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0.55)),
                         url('https://i.postimg.cc/5ysn72Jj/vfw-(1).jpg') center/cover no-repeat;
             height: 380px;
             display: flex;
             align-items: center;
             color: white;
         }
-        .section { padding: 70px 0; }
+        .icon-circle {
+            width: 72px;
+            height: 72px;
+            border-radius: 50%;
+            background: #212529;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            margin: 0 auto 1rem auto;
+        }
     </style>
 </head>
 <body>
@@ -33,12 +45,25 @@
                 <li class="nav-item"><a class="nav-link active" href="/about">About</a></li>
                 <li class="nav-item"><a class="nav-link" href="/work-at-rsg">Work at RSG</a></li>
                 <li class="nav-item"><a class="nav-link" href="/contact">Contact</a></li>
-                <li class="nav-item"><a class="nav-link" href="/newsletter">newsletter</a></li>
+                <li class="nav-item"><a class="nav-link" href="/newsletter">Newsletter</a></li>
             </ul>
             <div class="ml-lg-3 mt-3 mt-lg-0">
-                {% if session.get('logged_in') %}<a href="{{ url_for('admin.dashboard') }}" class="btn btn-success btn-sm mr-2">Admin dashboard</a><form method="post" action="{{ url_for('auth.logout') }}" class="d-inline"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn btn-outline-dark btn-sm">Logout</button></form>
-                {% elif session.get('customer_id') %}<span class="btn btn-success btn-sm mr-2">Logged in ({{ session.get('customer_name') }})</span><form method="post" action="{{ url_for('auth.customer_logout') }}" class="d-inline"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn btn-outline-dark btn-sm">Logout</button></form>
-                {% else %}<a href="{{ url_for('auth.login') }}" class="btn btn-outline-dark btn-sm mr-2">Login</a><a href="{{ url_for('auth.signup') }}" class="btn btn-dark btn-sm">Sign Up</a>{% endif %}
+                {% if session.get('logged_in') %}
+                    <a href="{{ url_for('admin.dashboard') }}" class="btn btn-success btn-sm mr-2">Admin dashboard</a>
+                    <form method="post" action="{{ url_for('auth.logout') }}" class="d-inline">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button class="btn btn-outline-dark btn-sm">Logout</button>
+                    </form>
+                {% elif session.get('customer_id') %}
+                    <a href="{{ url_for('auth.account') }}" class="btn btn-success btn-sm mr-2">My Account ({{ session.get('customer_name') }})</a>
+                    <form method="post" action="{{ url_for('auth.customer_logout') }}" class="d-inline">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button class="btn btn-outline-dark btn-sm">Logout</button>
+                    </form>
+                {% else %}
+                    <a href="{{ url_for('auth.login') }}" class="btn btn-outline-dark btn-sm mr-2">Login</a>
+                    <a href="{{ url_for('auth.signup') }}" class="btn btn-dark btn-sm">Sign Up</a>
+                {% endif %}
             </div>
         </div>
     </div>
@@ -50,58 +75,95 @@
         <p class="lead mb-0">The people behind RSG Software</p>
     </div>
 </header>
-  <div class="text-center">
-    <img src="https://i.postimg.cc/rwKST91B/rsgsoftware.png" alt="RSG Software Logo" class="mb-4" style="width: 300px; max-width: 0%;">
 
-<div class="container section">
-    <div class="row justify-content-center mb-5">
-        <div class="col-lg-8 text-center">
-            <h2 class="mb-4">We build realistic aircraft for serious sim pilots</h2>
-            <p class="lead text-muted">
-                RSG Software was founded by Eliaz and Jan, who both have big passions in the flight simming world. RSG Software was built to give the customers realistic, high fidelity aircrafts for a competing price.
-            </p>
+<!-- Intro -->
+<section class="py-5">
+    <div class="container text-center">
+        <img src="https://i.postimg.cc/rwKST91B/rsgsoftware.png" alt="RSG Software" style="width: 200px; max-width: 100%;" class="mb-4">
+        <h2 class="mb-3">Realistic aircraft for serious sim pilots</h2>
+        <p class="lead text-muted mx-auto" style="max-width: 650px;">
+            Founded by Eliaz and Jan — two passionate flight simmers building high-fidelity aircraft at a fair price.
+        </p>
+    </div>
+</section>
+
+<!-- Mission & Vision -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-6 mb-4 mb-md-0 text-center">
+                <div class="icon-circle">
+                    <i class="fa fa-bullseye"></i>
+                </div>
+                <h4>Our Mission</h4>
+                <p class="text-muted px-3">
+                    Craft the most realistic aircraft addons for Microsoft Flight Simulator — quality over quantity.
+                </p>
+            </div>
+            <div class="col-md-6 text-center">
+                <div class="icon-circle">
+                    <i class="fa fa-rocket"></i>
+                </div>
+                <h4>Our Vision</h4>
+                <p class="text-muted px-3">
+                    Become a trusted name in the sim community with products pilots enjoy for years.
+                </p>
+            </div>
         </div>
     </div>
+</section>
 
-    <div class="row mb-5">
-        <div class="col-md-6 mb-4">
-            <h4>Our Mission</h4>
-            <p>To develop the most realistic and well-crafted aircraft addons for Microsoft Flight Simulator. We believe that quality and attention to detail matter more than quantity.</p>
-        </div>
-        <div class="col-md-6 mb-4">
-            <h4>Our Vision</h4>
-            <p>To become one of the most respected developers in the flight simulation community by delivering products that sim pilots can trust and enjoy for years to come.</p>
+<!-- Values overlaid on aircraft image -->
+<section class="position-relative">
+    <img src="https://i.postimg.cc/brBqt5Lz/VFW614.png"
+         alt="VFW-Fokker 614"
+         class="img-fluid w-100"
+         style="min-height: 420px; object-fit: cover;">
+
+    <div class="position-absolute w-100 h-100"
+         style="top: 0; left: 0; background: rgba(0, 0, 0, 0.55);">
+        <div class="container h-100 d-flex flex-column justify-content-center py-5">
+            <h3 class="text-center text-white mb-5">What we believe in</h3>
+            <div class="row text-center text-white">
+                <div class="col-md-4 mb-4 mb-md-0">
+                    <div class="icon-circle mx-auto mb-3" style="background: rgba(255,255,255,0.15);">
+                        <i class="fa fa-diamond"></i>
+                    </div>
+                    <h5 class="text-white">Quality First</h5>
+                    <p class="mb-0" style="opacity: 0.9;">
+                        One excellent product beats many average ones.
+                    </p>
+                </div>
+                <div class="col-md-4 mb-4 mb-md-0">
+                    <div class="icon-circle mx-auto mb-3" style="background: rgba(255,255,255,0.15);">
+                        <i class="fa fa-cogs"></i>
+                    </div>
+                    <h5 class="text-white">Realism & Accuracy</h5>
+                    <p class="mb-0" style="opacity: 0.9;">
+                        Every system researched from real aircraft docs.
+                    </p>
+                </div>
+                <div class="col-md-4">
+                    <div class="icon-circle mx-auto mb-3" style="background: rgba(255,255,255,0.15);">
+                        <i class="fa fa-users"></i>
+                    </div>
+                    <h5 class="text-white">Community Driven</h5>
+                    <p class="mb-0" style="opacity: 0.9;">
+                        We listen and improve based on pilot feedback.
+                    </p>
+                </div>
+            </div>
         </div>
     </div>
+</section>
 
-</div>
-
-    <div class="row text-center mt-4">
-        <div class="col-12 mb-4"><h3>What we believe in</h3></div>
-        <div class="col-md-4 mb-4">
-            <h5>Quality First</h5>
-            <p class="text-muted">We would rather release one excellent product than many average ones.</p>
-        </div>
-        <div class="col-md-4 mb-4">
-            <h5>Realism & Accuracy</h5>
-            <p class="text-muted">Every system is researched using real aircraft documentation and procedures.</p>
-        </div>
-        <div class="col-md-4 mb-4">
-            <h5>Community Driven</h5>
-            <p class="text-muted">We listen to our users and continuously improve our products based on feedback.</p>
-        </div>
-    </div>
-</div>
-
-  <div class="text-center">
-    <img src="https://i.postimg.cc/rwKST91B/rsgsoftware.png" alt="RSG Software Logo" class="mb-4" style="width: 300px; max-width: 100%;">
-<div class="bg-light py-5">
+<!-- CTA -->
+<section class="py-5 bg-light">
     <div class="container text-center">
         <h4 class="mb-3">Want to see what we’re working on?</h4>
-        <a href="/aircraft" class="btn btn-primary btn-lg px-5">Browse Our Aircraft</a>
+        <a href="/aircraft" class="btn btn-dark btn-lg px-5">Browse Our Aircraft</a>
     </div>
-</div>
-
+</section>
 
 <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
