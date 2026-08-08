@@ -1,5 +1,6 @@
 """Separate public customer authentication from privileged admin access."""
 
+import secrets
 from datetime import datetime
 
 import pyotp
@@ -7,7 +8,11 @@ from flask import Blueprint, flash, redirect, render_template, request, session,
 from user_agents import parse
 
 from . import db
-from .email import send_welcome_email
+from .email import (
+    send_delete_account_email,
+    send_email_verification,
+    send_welcome_email,
+)
 from .extensions import bcrypt, limiter
 from .models import AdminSession, AdminUser, AuditLog, Customer
 
@@ -203,24 +208,103 @@ def account_settings():
 
         if not name or not email:
             flash("Name and email are required.", "danger")
-        elif email != customer.email and Customer.query.filter_by(email=email).first():
-            flash("That email is already in use.", "danger")
-        else:
-            customer.name = name
-            customer.email = email
-            session["customer_name"] = name
+            return redirect(url_for("auth.account_settings"))
 
-            if new_password:
-                if not bcrypt.check_password_hash(customer.password_hash, current_password):
-                    flash("Current password is incorrect.", "danger")
-                    return redirect(url_for("auth.account_settings"))
-                if len(new_password) < 8:
-                    flash("New password must be at least 8 characters.", "danger")
-                    return redirect(url_for("auth.account_settings"))
-                customer.password_hash = bcrypt.generate_password_hash(new_password).decode("utf-8")
+        customer.name = name
+        session["customer_name"] = name
 
+        if email != customer.email:
+            if Customer.query.filter_by(email=email).first():
+                flash("That email is already in use.", "danger")
+                return redirect(url_for("auth.account_settings"))
+
+            token = secrets.token_urlsafe(32)
+            customer.pending_email = email
+            customer.email_token = token
             db.session.commit()
-            flash("Account updated successfully.", "success")
-            return redirect(url_for("auth.account"))
+
+            verify_url = url_for("auth.verify_email", token=token, _external=True)
+            send_email_verification(email, customer.name, verify_url)
+            flash("Check your new email and click the verification link to confirm the change.", "info")
+            return redirect(url_for("auth.account_settings"))
+
+        if new_password:
+            if not bcrypt.check_password_hash(customer.password_hash, current_password):
+                flash("Current password is incorrect.", "danger")
+                return redirect(url_for("auth.account_settings"))
+            if len(new_password) < 8:
+                flash("New password must be at least 8 characters.", "danger")
+                return redirect(url_for("auth.account_settings"))
+            customer.password_hash = bcrypt.generate_password_hash(new_password).decode("utf-8")
+
+        db.session.commit()
+        flash("Account updated successfully.", "success")
+        return redirect(url_for("auth.account"))
 
     return render_template("account_settings.html", customer=customer)
+
+
+@auth.route("/verify-email/<token>")
+def verify_email(token):
+    customer = Customer.query.filter_by(email_token=token).first()
+    if not customer or not customer.pending_email:
+        flash("Invalid or expired verification link.", "danger")
+        return redirect(url_for("auth.login"))
+
+    if Customer.query.filter_by(email=customer.pending_email).first():
+        flash("That email is already in use.", "danger")
+        customer.pending_email = None
+        customer.email_token = None
+        db.session.commit()
+        return redirect(url_for("auth.account_settings"))
+
+    customer.email = customer.pending_email
+    customer.pending_email = None
+    customer.email_token = None
+    db.session.commit()
+
+    flash("Your email has been verified and updated.", "success")
+    if session.get("customer_id") == customer.id:
+        return redirect(url_for("auth.account"))
+    return redirect(url_for("auth.login"))
+
+
+@auth.route("/account/delete", methods=["POST"])
+def request_delete_account():
+    if not session.get("customer_id"):
+        flash("Please log in first.", "warning")
+        return redirect(url_for("auth.login"))
+
+    customer = db.session.get(Customer, session["customer_id"])
+    if not customer:
+        session.clear()
+        return redirect(url_for("auth.login"))
+
+    token = secrets.token_urlsafe(32)
+    customer.email_token = token
+    customer.pending_email = None  # clear any pending email change
+    db.session.commit()
+
+    delete_url = url_for("auth.confirm_delete_account", token=token, _external=True)
+    send_delete_account_email(customer.email, customer.name, delete_url)
+
+    flash("We sent a confirmation link to your email. Click it to permanently delete your account.", "info")
+    return redirect(url_for("auth.account_settings"))
+
+
+@auth.route("/account/delete/<token>")
+def confirm_delete_account(token):
+    customer = Customer.query.filter_by(email_token=token).first()
+    if not customer:
+        flash("Invalid or expired deletion link.", "danger")
+        return redirect(url_for("auth.login"))
+
+    customer_id = customer.id
+    db.session.delete(customer)
+    db.session.commit()
+
+    if session.get("customer_id") == customer_id:
+        session.clear()
+
+    flash("Your account has been permanently deleted.", "success")
+    return redirect(url_for("views.home"))

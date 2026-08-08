@@ -25,7 +25,14 @@
         {% endfor %}
     {% endwith %}
 
-    <form method="POST" class="card shadow-sm">
+    {% if customer.pending_email %}
+    <div class="alert alert-info">
+        Pending email change to <strong>{{ customer.pending_email }}</strong>.
+        Check that inbox and click the verification link.
+    </div>
+    {% endif %}
+
+    <form method="POST" class="card shadow-sm mb-4">
         <div class="card-body">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
@@ -37,6 +44,7 @@
             <div class="form-group">
                 <label>Email</label>
                 <input type="email" name="email" class="form-control" value="{{ customer.email }}" required>
+                <small class="form-text text-muted">Changing email requires verification.</small>
             </div>
 
             <hr>
@@ -57,6 +65,24 @@
             <button type="submit" class="btn btn-dark btn-block">Save changes</button>
         </div>
     </form>
+
+    <!-- Delete account -->
+    <div class="card border-danger shadow-sm">
+        <div class="card-body">
+            <h5 class="text-danger">Danger zone</h5>
+            <p class="text-muted small mb-3">
+                Permanently delete your account. This cannot be undone.
+                We will send a confirmation link to your email first.
+            </p>
+            <form method="POST" action="{{ url_for('auth.request_delete_account') }}"
+                  onsubmit="return confirm('Send a deletion confirmation email to your inbox?');">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="btn btn-outline-danger btn-block">
+                    Delete my account
+                </button>
+            </form>
+        </div>
+    </div>
 </main>
 
 </body>

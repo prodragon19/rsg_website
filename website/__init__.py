@@ -25,7 +25,11 @@ def upgrade_database_schema():
 
     admin_columns = {column["name"] for column in inspector.get_columns("admin_user")}
     session_columns = {column["name"] for column in inspector.get_columns("admin_session")}
-    customer_columns = {column["name"] for column in inspector.get_columns("customer")}
+    customer_columns = (
+        {column["name"] for column in inspector.get_columns("customer")}
+        if "customer" in inspector.get_table_names()
+        else set()
+    )
 
     with db.engine.begin() as connection:
         if "two_factor_secret" not in admin_columns:
@@ -39,6 +43,14 @@ def upgrade_database_schema():
         if "last_login" not in customer_columns:
             connection.execute(
                 text("ALTER TABLE customer ADD COLUMN last_login TIMESTAMP")
+            )
+        if "pending_email" not in customer_columns:
+            connection.execute(
+                text("ALTER TABLE customer ADD COLUMN pending_email VARCHAR(200)")
+            )
+        if "email_token" not in customer_columns:
+            connection.execute(
+                text("ALTER TABLE customer ADD COLUMN email_token VARCHAR(100)")
             )
 
 
@@ -55,7 +67,6 @@ def ensure_bootstrap_owner():
 
     email = os.getenv("ADMIN_EMAIL", f"{username}@rsgsoftware.com").lower()
 
-    # Hitta befintlig admin via username ELLER email
     admin = AdminUser.query.filter_by(username=username).first()
     if admin is None:
         admin = AdminUser.query.filter_by(email=email).first()
