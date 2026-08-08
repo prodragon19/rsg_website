@@ -1,5 +1,5 @@
 """Separate public customer authentication from privileged admin access."""
-from .email import send_welcome_email
+
 from datetime import datetime
 
 import pyotp
@@ -7,6 +7,7 @@ from flask import Blueprint, flash, redirect, render_template, request, session,
 from user_agents import parse
 
 from . import db
+from .email import send_welcome_email
 from .extensions import bcrypt, limiter
 from .models import AdminSession, AdminUser, AuditLog, Customer
 
@@ -15,7 +16,9 @@ auth = Blueprint("auth", __name__)
 
 def create_audit(action, target=None):
     db.session.add(AuditLog(
-        admin_id=session.get("admin_id"), action=action, target=target,
+        admin_id=session.get("admin_id"),
+        action=action,
+        target=target,
         ip_address=request.remote_addr,
     ))
 
@@ -23,12 +26,19 @@ def create_audit(action, target=None):
 def create_device_session(admin):
     parsed = parse(request.headers.get("User-Agent", ""))
     country = request.headers.get("CF-IPCountry") or request.headers.get("X-Country")
-    previous_ips = {item.ip_address for item in AdminSession.query.filter_by(admin_id=admin.id).all()}
+    previous_ips = {
+        item.ip_address
+        for item in AdminSession.query.filter_by(admin_id=admin.id).all()
+    }
     unusual = bool(previous_ips and request.remote_addr not in previous_ips)
     device = AdminSession(
-        admin_id=admin.id, ip_address=request.remote_addr, country=country,
-        browser=parsed.browser.family, operating_system=parsed.os.family,
-        device_type=parsed.device.family, unusual=unusual,
+        admin_id=admin.id,
+        ip_address=request.remote_addr,
+        country=country,
+        browser=parsed.browser.family,
+        operating_system=parsed.os.family,
+        device_type=parsed.device.family,
+        unusual=unusual,
     )
     db.session.add(device)
     return device
@@ -39,8 +49,11 @@ def start_admin_session(admin):
     db.session.flush()
     session.clear()
     session.update({
-        "logged_in": True, "admin_id": admin.id, "username": admin.username,
-        "role": admin.role, "device_session_id": device.id,
+        "logged_in": True,
+        "admin_id": admin.id,
+        "username": admin.username,
+        "role": admin.role,
+        "device_session_id": device.id,
     })
     admin.last_login = datetime.utcnow()
     create_audit("Admin logged in", admin.username)
@@ -107,12 +120,23 @@ def signup():
         elif Customer.query.filter_by(email=email).first():
             flash("An account with that email already exists.", "danger")
         else:
-            customer = Customer(name=name, email=email, password_hash=bcrypt.generate_password_hash(password).decode("utf-8"))
+            customer = Customer(
+                name=name,
+                email=email,
+                password_hash=bcrypt.generate_password_hash(password).decode("utf-8")
+            )
             db.session.add(customer)
             db.session.commit()
+
+            # Skicka välkomstmail
+            send_welcome_email(email, name)
+
             session.clear()
-            session.update({"customer_id": customer.id, "customer_name": customer.name})
-            flash("Your account has been created.", "success")
+            session.update({
+                "customer_id": customer.id,
+                "customer_name": customer.name
+            })
+            flash("Your account has been created. Check your email!", "success")
             return redirect(url_for("views.home"))
     return render_template("signup.html")
 
@@ -124,13 +148,21 @@ def customer_login():
         email = request.form.get("email", "").strip().lower()
         password = request.form.get("password", "")
         customer = Customer.query.filter_by(email=email).first()
-        if not customer or customer.banned or not customer.password_hash or not bcrypt.check_password_hash(customer.password_hash, password):
+        if (
+            not customer
+            or customer.banned
+            or not customer.password_hash
+            or not bcrypt.check_password_hash(customer.password_hash, password)
+        ):
             flash("Invalid email or password.", "danger")
         else:
             customer.last_login = datetime.utcnow()
             db.session.commit()
             session.clear()
-            session.update({"customer_id": customer.id, "customer_name": customer.name})
+            session.update({
+                "customer_id": customer.id,
+                "customer_name": customer.name
+            })
             return redirect(url_for("views.home"))
     return render_template("login.html")
 

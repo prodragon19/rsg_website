@@ -3,10 +3,11 @@ import resend
 
 resend.api_key = os.environ.get("RESEND_API_KEY")
 
+
 def send_welcome_email(to_email, name):
     try:
         resend.Emails.send({
-            "from": "RSG Software <tornqvisteliaz@gmail.com>",
+            "from": "RSG Software <onboarding@resend.dev>",
             "to": [to_email],
             "subject": "Welcome to RSG Software!",
             "html": f"""
