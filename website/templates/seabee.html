@@ -7,133 +7,153 @@
     <title>RC-3 Seabee | RSG Software</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
     <style>
-        .page-header {
-            background: linear-gradient(rgba(0,0,0,0.55), rgba(0,0,0,0.55)),
-                        url('https://i.postimg.cc/28WybSM2/metroliner.jpg') center/cover no-repeat;
-            min-height: 420px;
-            display: flex;
-            align-items: center;
+        body { background: #0b0d10; color: #f4f4f4; }
+        a { color: inherit; }
+        .back-btn {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 20;
+            background: rgba(0,0,0,0.55);
             color: white;
+            border: 1px solid rgba(255,255,255,0.25);
+            padding: 8px 16px;
+            border-radius: 999px;
+            text-decoration: none;
         }
-        .product-image {
-            border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+        .hero {
+            min-height: 100vh;
+            background:
+                linear-gradient(rgba(0,0,0,0.25), rgba(0,0,0,0.7)),
+                url('https://i.postimg.cc/28WybSM2/metroliner.jpg') center/cover no-repeat;
+            display: flex;
+            align-items: flex-end;
         }
+        .hero-content { padding: 80px 0; }
+        .hero h1 { font-size: 4rem; font-weight: 800; }
+        .full-image {
+            width: 100%;
+            height: 80vh;
+            object-fit: cover;
+            display: block;
+        }
+        .gallery img {
+            width: 100%;
+            height: 320px;
+            object-fit: cover;
+            margin-bottom: 16px;
+        }
+        .buy-box {
+            background: #161a20;
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 16px;
+            padding: 28px;
+            position: sticky;
+            top: 24px;
+        }
+        .price { font-size: 2.4rem; font-weight: 700; }
+        .section { padding: 90px 0; }
+        .muted { color: #b9c0c8; }
     </style>
 </head>
 <body>
 
-<nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
+<a href="{{ url_for('views.aircraft') }}" class="back-btn">← Aircraft</a>
+
+<section class="hero">
+    <div class="container hero-content">
+        <span class="badge badge-light mb-3">MSFS 2024</span>
+        <h1>Republic RC-3 Seabee</h1>
+        <p class="lead mb-0">An amphibious classic built for water, land and short coastal flights.</p>
+    </div>
+</section>
+
+<img class="full-image" src="https://i.postimg.cc/28WybSM2/metroliner.jpg" alt="Seabee exterior">
+
+<section class="section">
     <div class="container">
-        <a class="navbar-brand" href="/"><strong>RSG</strong> Software</a>
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbar">
-            <ul class="navbar-nav ml-auto">
-                <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
-                <li class="nav-item"><a class="nav-link active" href="/aircraft">Our Aircraft</a></li>
-                <li class="nav-item"><a class="nav-link" href="/about">About</a></li>
-                <li class="nav-item"><a class="nav-link" href="/work-at-rsg">Work at RSG</a></li>
-                <li class="nav-item"><a class="nav-link" href="/contact">Contact</a></li>
-                <li class="nav-item"><a class="nav-link" href="/newsletter">Newsletter</a></li>
-            </ul>
-            <div class="ml-lg-3 mt-3 mt-lg-0">
-                {% if session.get('logged_in') %}
-                    <a href="{{ url_for('admin.dashboard') }}" class="btn btn-success btn-sm mr-2">Admin dashboard</a>
-                    <form method="post" action="{{ url_for('auth.logout') }}" class="d-inline">
-                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                        <button class="btn btn-outline-dark btn-sm">Logout</button>
-                    </form>
-                {% elif session.get('customer_id') %}
-                    <a href="{{ url_for('auth.account') }}" class="btn btn-success btn-sm mr-2">My Account ({{ session.get('customer_name') }})</a>
-                    <form method="post" action="{{ url_for('auth.customer_logout') }}" class="d-inline">
-                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                        <button class="btn btn-outline-dark btn-sm">Logout</button>
-                    </form>
-                {% else %}
-                    <a href="{{ url_for('auth.login') }}" class="btn btn-outline-dark btn-sm mr-2">Login</a>
-                    <a href="{{ url_for('auth.signup') }}" class="btn btn-dark btn-sm">Sign Up</a>
-                {% endif %}
+        <div class="row">
+            <div class="col-lg-7 mb-5">
+                <h2 class="mb-4">Built for both water and land</h2>
+                <p class="lead muted">
+                    The Seabee is not a normal general-aviation aircraft. It is a flying boat with a pusher propeller and an all-metal hull.
+                </p>
+                <p class="muted">
+                    First flown in the 1940s, the Republic RC-3 Seabee was designed as a four-seat amphibious aircraft
+                    for private and utility use. It could leave a lake in the morning and land at a small airfield later the same day.
+                </p>
+                <p class="muted">
+                    Our version for Microsoft Flight Simulator 2024 focuses on that unique character:
+                    water handling, visual detail and a cockpit that feels mechanical rather than modern airliner-clean.
+                </p>
             </div>
-        </div>
-    </div>
-</nav>
-
-<header class="page-header">
-    <div class="container">
-        <span class="badge badge-light mb-3">IN DEVELOPMENT</span>
-        <h1 class="display-4 font-weight-bold">Republic RC-3 Seabee</h1>
-        <p class="lead mb-0">For Microsoft Flight Simulator 2024</p>
-    </div>
-</header>
-
-<main class="container py-5">
-    <div class="row align-items-start">
-        <div class="col-lg-7 mb-4">
-            <img src="https://i.postimg.cc/28WybSM2/metroliner.jpg"
-                 class="img-fluid product-image mb-4"
-                 alt="Republic RC-3 Seabee">
-
-            <h2>About the RC-3 Seabee</h2>
-            <p>
-                The Republic RC-3 Seabee is an American amphibious aircraft first flown in the 1940s.
-                Built by Republic Aviation, it was designed as a four-seat flying boat for private and utility use,
-                able to operate from both water and land.
-            </p>
-            <p>
-                With its pusher propeller, all-metal hull and distinctive shape, the Seabee became a classic
-                among amphibious aircraft. Our addon brings this unique aircraft to Microsoft Flight Simulator 2024
-                with high-fidelity modeling and authentic systems.
-            </p>
-
-            <h4 class="mt-4">Features</h4>
-            <ul>
-                <li>Highly detailed 3D model</li>
-                <li>Amphibious operations on water and land</li>
-                <li>Custom avionics and systems</li>
-                <li>Realistic flight dynamics</li>
-                <li>Authentic sound set</li>
-            </ul>
-        </div>
-
-        <div class="col-lg-5">
-            <div class="card shadow-sm">
-                <div class="card-body">
-                    <h4 class="mb-3">Download</h4>
-                    <p class="text-muted">Microsoft Flight Simulator 2024</p>
-                    <p><strong>Aircraft:</strong> Republic RC-3 Seabee</p>
-                    <p><strong>Status:</strong> In development</p>
-                    <p><strong>Expected release:</strong> TBA</p>
-
+            <div class="col-lg-5">
+                <div class="buy-box">
+                    <h4>Buy RC-3 Seabee</h4>
+                    <p class="muted mb-1">Microsoft Flight Simulator 2024</p>
+                    <div class="price">$29.99</div>
+                    <p class="muted">Pre-order coming soon</p>
+                    <ul class="list-unstyled my-4 muted">
+                        <li class="mb-2">• Instant download after release</li>
+                        <li class="mb-2">• Free product updates</li>
+                        <li class="mb-2">• Saved to your RSG account</li>
+                    </ul>
                     {% if session.get('customer_id') or session.get('logged_in') %}
-                        <a href="#" class="btn btn-dark btn-block disabled">
-                            Download coming soon
-                        </a>
-                        <small class="text-muted d-block mt-2">
-                            The file will appear here when the aircraft is released.
-                        </small>
+                        <button class="btn btn-light btn-block" disabled>Add to cart — coming soon</button>
                     {% else %}
-                        <p>Log in to access the download when it is released.</p>
-                        <a href="{{ url_for('auth.login') }}" class="btn btn-dark btn-block">Log in to download</a>
-                        <a href="{{ url_for('auth.signup') }}" class="btn btn-outline-dark btn-block">Create account</a>
+                        <a href="{{ url_for('auth.login') }}" class="btn btn-light btn-block">Log in to buy</a>
                     {% endif %}
                 </div>
             </div>
         </div>
     </div>
-</main>
+</section>
 
-<footer class="py-4 text-center border-top bg-white">
-    <p class="mb-2">
-        <a href="{{ url_for('views.terms') }}" class="text-muted mr-3">Terms of Service</a>
-        <a href="{{ url_for('views.privacy') }}" class="text-muted">Privacy Policy</a>
+<img class="full-image" src="https://i.postimg.cc/28WybSM2/metroliner.jpg" alt="Seabee water operations">
+
+<section class="section">
+    <div class="container">
+        <h2 class="mb-5">Gallery</h2>
+        <div class="row gallery">
+            <div class="col-md-6"><img src="https://i.postimg.cc/28WybSM2/metroliner.jpg" alt="Seabee 1"></div>
+            <div class="col-md-6"><img src="https://i.postimg.cc/28WybSM2/metroliner.jpg" alt="Seabee 2"></div>
+            <div class="col-md-6"><img src="https://i.postimg.cc/28WybSM2/metroliner.jpg" alt="Seabee 3"></div>
+            <div class="col-md-6"><img src="https://i.postimg.cc/28WybSM2/metroliner.jpg" alt="Seabee 4"></div>
+            <div class="col-md-4"><img src="https://i.postimg.cc/28WybSM2/metroliner.jpg" alt="Seabee 5"></div>
+            <div class="col-md-4"><img src="https://i.postimg.cc/28WybSM2/metroliner.jpg" alt="Seabee 6"></div>
+            <div class="col-md-4"><img src="https://i.postimg.cc/28WybSM2/metroliner.jpg" alt="Seabee 7"></div>
+        </div>
+    </div>
+</section>
+
+<section class="section" style="background:#11151b;">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-4 mb-4">
+                <h4>Systems</h4>
+                <p class="muted">Custom electrical, fuel and amphibious systems built for water and land operations.</p>
+            </div>
+            <div class="col-md-4 mb-4">
+                <h4>Modelling</h4>
+                <p class="muted">Detailed exterior, interior and animations with a focus on the Seabee’s unique shape.</p>
+            </div>
+            <div class="col-md-4 mb-4">
+                <h4>Sound</h4>
+                <p class="muted">Engine, propeller, cockpit and water effects designed around the pusher layout.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<img class="full-image" src="https://i.postimg.cc/28WybSM2/metroliner.jpg" alt="Seabee final shot">
+
+<footer class="py-4 text-center">
+    <p class="muted mb-2">
+        <a href="{{ url_for('views.terms') }}" class="mr-3">Terms of Service</a>
+        <a href="{{ url_for('views.privacy') }}">Privacy Policy</a>
     </p>
-    <p class="text-muted mb-0">© 2026 RSG Software. All rights reserved.</p>
+    <p class="muted mb-0">© 2026 RSG Software. All rights reserved.</p>
 </footer>
 
-<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
 </body>
 </html>
