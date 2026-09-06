@@ -21,6 +21,11 @@ def aircraft():
     return render_template("aircraft.html")
 
 
+@views.route("/aircraft/seabee")
+def seabee():
+    return render_template("seabee.html")
+
+
 @views.route("/contact")
 @views.route("/Contact")
 def contact():
@@ -52,8 +57,3 @@ def terms():
 @views.route("/privacy")
 def privacy():
     return render_template("privacy.html")
-    
-    
-    @views.route("/aircraft/seabee")
-def seabee():
-    return render_template("seabee.html")
