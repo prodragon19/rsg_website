@@ -4,16 +4,20 @@
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='rsgfav.png') }}">
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Work at RSG | RSG Software</title>
+    <title>RC-3 Seabee | RSG Software</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
     <style>
         .page-header {
-            background: linear-gradient(rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0.55)),
+            background: linear-gradient(rgba(0,0,0,0.55), rgba(0,0,0,0.55)),
                         url('https://i.postimg.cc/28WybSM2/metroliner.jpg') center/cover no-repeat;
-            height: 380px;
+            min-height: 420px;
             display: flex;
             align-items: center;
             color: white;
+        }
+        .product-image {
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.12);
         }
     </style>
 </head>
@@ -28,9 +32,9 @@
         <div class="collapse navbar-collapse" id="navbar">
             <ul class="navbar-nav ml-auto">
                 <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
-                <li class="nav-item"><a class="nav-link" href="/aircraft">Our Aircraft</a></li>
+                <li class="nav-item"><a class="nav-link active" href="/aircraft">Our Aircraft</a></li>
                 <li class="nav-item"><a class="nav-link" href="/about">About</a></li>
-                <li class="nav-item"><a class="nav-link active" href="/work-at-rsg">Work at RSG</a></li>
+                <li class="nav-item"><a class="nav-link" href="/work-at-rsg">Work at RSG</a></li>
                 <li class="nav-item"><a class="nav-link" href="/contact">Contact</a></li>
                 <li class="nav-item"><a class="nav-link" href="/newsletter">Newsletter</a></li>
             </ul>
@@ -57,62 +61,68 @@
 </nav>
 
 <header class="page-header">
-    <div class="container text-center">
-        <h1 class="display-4 font-weight-bold">Work at RSG</h1>
-        <p class="lead mb-0">Join the team behind high-quality flight simulation software</p>
+    <div class="container">
+        <span class="badge badge-light mb-3">IN DEVELOPMENT</span>
+        <h1 class="display-4 font-weight-bold">Republic RC-3 Seabee</h1>
+        <p class="lead mb-0">For Microsoft Flight Simulator 2024</p>
     </div>
 </header>
 
-<div class="container py-5">
-    <div class="row justify-content-center mb-5">
-        <div class="col-lg-8 text-center">
-            <h2 class="mb-4">Why work at RSG Software?</h2>
-            <p class="lead text-muted">
-                We are a small but passionate team of flight simulation enthusiasts.
-                We focus on quality, realism, and creating products we ourselves would want to use.
-                We are always hiring, send a us a mail or a DM on Discord.
-            </p>
-        </div>
-    </div>
+<main class="container py-5">
+    <div class="row align-items-start">
+        <div class="col-lg-7 mb-4">
+            <img src="https://i.postimg.cc/28WybSM2/metroliner.jpg"
+                 class="img-fluid product-image mb-4"
+                 alt="Republic RC-3 Seabee">
 
-    <div class="row justify-content-center">
-        <div class="col-lg-8">
-            <div class="alert alert-light text-center p-5">
-                <h4 class="mb-3">Have you been on a Metroliner?</h4>
-                <p class="mb-4">
-                    If you have been on one or even was a pilot for one? We want your opinion on our aircraft, send us a mail and we will send you a free copy!
-                </p>
-                <a href="mailto:careers@rsgsoftware.site" class="btn btn-primary px-4">Send us a mail!</a>
+            <h2>About the RC-3 Seabee</h2>
+            <p>
+                The Republic RC-3 Seabee is an American amphibious aircraft first flown in the 1940s.
+                Built by Republic Aviation, it was designed as a four-seat flying boat for private and utility use,
+                able to operate from both water and land.
+            </p>
+            <p>
+                With its pusher propeller, all-metal hull and distinctive shape, the Seabee became a classic
+                among amphibious aircraft. Our addon brings this unique aircraft to Microsoft Flight Simulator 2024
+                with high-fidelity modeling and authentic systems.
+            </p>
+
+            <h4 class="mt-4">Features</h4>
+            <ul>
+                <li>Highly detailed 3D model</li>
+                <li>Amphibious operations on water and land</li>
+                <li>Custom avionics and systems</li>
+                <li>Realistic flight dynamics</li>
+                <li>Authentic sound set</li>
+            </ul>
+        </div>
+
+        <div class="col-lg-5">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h4 class="mb-3">Download</h4>
+                    <p class="text-muted">Microsoft Flight Simulator 2024</p>
+                    <p><strong>Aircraft:</strong> Republic RC-3 Seabee</p>
+                    <p><strong>Status:</strong> In development</p>
+                    <p><strong>Expected release:</strong> TBA</p>
+
+                    {% if session.get('customer_id') or session.get('logged_in') %}
+                        <a href="#" class="btn btn-dark btn-block disabled">
+                            Download coming soon
+                        </a>
+                        <small class="text-muted d-block mt-2">
+                            The file will appear here when the aircraft is released.
+                        </small>
+                    {% else %}
+                        <p>Log in to access the download when it is released.</p>
+                        <a href="{{ url_for('auth.login') }}" class="btn btn-dark btn-block">Log in to download</a>
+                        <a href="{{ url_for('auth.signup') }}" class="btn btn-outline-dark btn-block">Create account</a>
+                    {% endif %}
+                </div>
             </div>
         </div>
     </div>
-
-    <div class="row mt-5">
-        <div class="col-12 mb-3"><h4>What we value</h4></div>
-        <div class="col-md-6">
-            <ul class="list-unstyled">
-                <li class="mb-2">• Strong passion for flight simulation</li>
-                <li class="mb-2">• High attention to detail</li>
-                <li class="mb-2">• Ability to work independently</li>
-            </ul>
-        </div>
-        <div class="col-md-6">
-            <ul class="list-unstyled">
-                <li class="mb-2">• Good communication skills</li>
-                <li class="mb-2">• Interest in realistic systems</li>
-                <li class="mb-2">• Willingness to learn and improve</li>
-            </ul>
-        </div>
-    </div>
-
-    <div class="mt-5 p-4 bg-light rounded text-center">
-        <h5 class="mb-3">Want to get in touch anyway?</h5>
-        <p class="mb-0">
-            Send an email to <strong>careers@rsgsoftware.site</strong> with your CV and a short introduction.
-            We keep interesting applications for future opportunities.
-        </p>
-    </div>
-</div>
+</main>
 
 <footer class="py-4 text-center border-top bg-white">
     <p class="mb-2">
