@@ -108,3 +108,5 @@ class SupportTicket(db.Model):
     message = db.Column(db.Text)
     status = db.Column(db.String(50), default="Open")
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    api_token = db.Column(db.String(100), unique=True)

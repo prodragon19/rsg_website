@@ -52,6 +52,10 @@ def upgrade_database_schema():
             connection.execute(
                 text("ALTER TABLE customer ADD COLUMN email_token VARCHAR(100)")
             )
+        if "api_token" not in customer_columns:
+            connection.execute(
+                text("ALTER TABLE customer ADD COLUMN api_token VARCHAR(100)")
+            )
 
 
 def ensure_bootstrap_owner():
@@ -133,6 +137,10 @@ def create_app():
 
     from .admin import admin
     app.register_blueprint(admin)
+
+    from .api import api
+    app.register_blueprint(api)
+    csrf.exempt(api)
 
     with app.app_context():
         db.create_all()
