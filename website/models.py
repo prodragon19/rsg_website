@@ -70,6 +70,7 @@ class Customer(db.Model):
     last_login = db.Column(db.DateTime)
     pending_email = db.Column(db.String(200))
     email_token = db.Column(db.String(100))
+    api_token = db.Column(db.String(100), unique=True)
 
     orders = db.relationship(
         "Order", backref="customer", lazy=True, cascade="all, delete"
@@ -108,5 +109,3 @@ class SupportTicket(db.Model):
     message = db.Column(db.Text)
     status = db.Column(db.String(50), default="Open")
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-
-    api_token = db.Column(db.String(100), unique=True)
