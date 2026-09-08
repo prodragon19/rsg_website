@@ -36,6 +36,10 @@ def upgrade_database_schema():
             connection.execute(
                 text("ALTER TABLE admin_user ADD COLUMN two_factor_secret VARCHAR(255)")
             )
+        if "api_token" not in admin_columns:
+            connection.execute(
+                text("ALTER TABLE admin_user ADD COLUMN api_token VARCHAR(100)")
+            )
         if "unusual" not in session_columns:
             connection.execute(
                 text("ALTER TABLE admin_session ADD COLUMN unusual BOOLEAN DEFAULT false")

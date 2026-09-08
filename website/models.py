@@ -31,6 +31,7 @@ class AdminUser(db.Model, UserMixin):
     two_factor_secret = db.Column(db.String(255))
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     last_login = db.Column(db.DateTime)
+    api_token = db.Column(db.String(100), unique=True)
 
     sessions = db.relationship(
         "AdminSession", backref="admin", lazy=True, cascade="all, delete"
