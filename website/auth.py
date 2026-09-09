@@ -2,6 +2,7 @@
 
 import secrets
 from datetime import datetime
+from urllib.parse import urlparse
 
 import pyotp
 from flask import Blueprint, flash, redirect, render_template, request, session, url_for
@@ -17,6 +18,36 @@ from .extensions import bcrypt, limiter
 from .models import AdminSession, AdminUser, AuditLog, Customer
 
 auth = Blueprint("auth", __name__)
+
+
+def safe_next_url(default_endpoint="views.home"):
+    target = request.values.get("next", "").strip()
+    if target:
+        parsed = urlparse(target)
+        if not parsed.netloc and target.startswith("/"):
+            return target
+    return url_for(default_endpoint)
+
+
+def get_current_customer():
+    customer_id = session.get("customer_id")
+    if not customer_id:
+        return None
+    customer = db.session.get(Customer, customer_id)
+    if not customer or customer.banned:
+        session.clear()
+        return None
+    return customer
+
+
+def start_customer_session(customer):
+    session.clear()
+    session.permanent = True
+    session["customer_id"] = customer.id
+    session["customer_name"] = customer.name
+    session["customer_email"] = customer.email
+    customer.last_login = datetime.utcnow()
+    db.session.commit()
 
 
 def create_audit(action, target=None):
@@ -115,10 +146,14 @@ def logout():
 @auth.route("/signup", methods=["GET", "POST"])
 @limiter.limit("5 per hour", methods=["POST"])
 def signup():
+    if get_current_customer():
+        return redirect(url_for("auth.account"))
+
     if request.method == "POST":
         name = request.form.get("name", "").strip()
         email = request.form.get("email", "").strip().lower()
         password = request.form.get("password", "")
+
         if not name or not email or len(password) < 8:
             flash("Enter a name, email, and a password of at least 8 characters.", "danger")
         elif Customer.query.filter_by(email=email).first():
@@ -127,45 +162,44 @@ def signup():
             customer = Customer(
                 name=name,
                 email=email,
-                password_hash=bcrypt.generate_password_hash(password).decode("utf-8")
+                password_hash=bcrypt.generate_password_hash(password).decode("utf-8"),
             )
             db.session.add(customer)
             db.session.commit()
             send_welcome_email(email, name)
-            session.clear()
-            session.update({
-                "customer_id": customer.id,
-                "customer_name": customer.name
-            })
-            flash("Your account has been created. Check your email!", "success")
-            return redirect(url_for("views.home"))
+            start_customer_session(customer)
+            flash("Your account has been created.", "success")
+            return redirect(safe_next_url("auth.account"))
+
     return render_template("signup.html")
 
 
 @auth.route("/login", methods=["GET", "POST"], endpoint="login")
 @limiter.limit("5 per minute", methods=["POST"])
 def customer_login():
+    if get_current_customer():
+        return redirect(safe_next_url("auth.account"))
+
     if request.method == "POST":
         email = request.form.get("email", "").strip().lower()
         password = request.form.get("password", "")
+
         customer = Customer.query.filter_by(email=email).first()
-        if (
-            not customer
-            or customer.banned
-            or not customer.password_hash
-            or not bcrypt.check_password_hash(customer.password_hash, password)
-        ):
+        valid = (
+            customer
+            and not customer.banned
+            and customer.password_hash
+            and bcrypt.check_password_hash(customer.password_hash, password)
+        )
+
+        if not valid:
             flash("Invalid email or password.", "danger")
-        else:
-            customer.last_login = datetime.utcnow()
-            db.session.commit()
-            session.clear()
-            session.update({
-                "customer_id": customer.id,
-                "customer_name": customer.name
-            })
-            return redirect(url_for("views.home"))
-    return render_template("login.html")
+            return redirect(url_for("auth.login", next=request.form.get("next", "")))
+
+        start_customer_session(customer)
+        return redirect(safe_next_url("auth.account"))
+
+    return render_template("login.html", next=request.args.get("next", ""))
 
 
 @auth.route("/logout", methods=["POST"])
@@ -176,29 +210,19 @@ def customer_logout():
 
 @auth.route("/account")
 def account():
-    if not session.get("customer_id"):
-        flash("Please log in first.", "warning")
-        return redirect(url_for("auth.login"))
-
-    customer = db.session.get(Customer, session["customer_id"])
+    customer = get_current_customer()
     if not customer:
-        session.clear()
-        return redirect(url_for("auth.login"))
-
-    orders = customer.orders
-    return render_template("account.html", customer=customer, orders=orders)
+        flash("Please log in first.", "warning")
+        return redirect(url_for("auth.login", next=url_for("auth.account")))
+    return render_template("account.html", customer=customer, orders=customer.orders)
 
 
 @auth.route("/account/settings", methods=["GET", "POST"])
 def account_settings():
-    if not session.get("customer_id"):
-        flash("Please log in first.", "warning")
-        return redirect(url_for("auth.login"))
-
-    customer = db.session.get(Customer, session["customer_id"])
+    customer = get_current_customer()
     if not customer:
-        session.clear()
-        return redirect(url_for("auth.login"))
+        flash("Please log in first.", "warning")
+        return redirect(url_for("auth.login", next=url_for("auth.account_settings")))
 
     if request.method == "POST":
         name = request.form.get("name", "").strip()
@@ -263,31 +287,29 @@ def verify_email(token):
     customer.email_token = None
     db.session.commit()
 
-    flash("Your email has been verified and updated.", "success")
     if session.get("customer_id") == customer.id:
+        session["customer_email"] = customer.email
+        flash("Your email has been verified and updated.", "success")
         return redirect(url_for("auth.account"))
+
+    flash("Your email has been verified. Please log in.", "success")
     return redirect(url_for("auth.login"))
 
 
 @auth.route("/account/delete", methods=["POST"])
 def request_delete_account():
-    if not session.get("customer_id"):
-        flash("Please log in first.", "warning")
-        return redirect(url_for("auth.login"))
-
-    customer = db.session.get(Customer, session["customer_id"])
+    customer = get_current_customer()
     if not customer:
-        session.clear()
+        flash("Please log in first.", "warning")
         return redirect(url_for("auth.login"))
 
     token = secrets.token_urlsafe(32)
     customer.email_token = token
-    customer.pending_email = None  # clear any pending email change
+    customer.pending_email = None
     db.session.commit()
 
     delete_url = url_for("auth.confirm_delete_account", token=token, _external=True)
     send_delete_account_email(customer.email, customer.name, delete_url)
-
     flash("We sent a confirmation link to your email. Click it to permanently delete your account.", "info")
     return redirect(url_for("auth.account_settings"))
 
