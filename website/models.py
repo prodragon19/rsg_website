@@ -110,3 +110,22 @@ class SupportTicket(db.Model):
     message = db.Column(db.Text)
     status = db.Column(db.String(50), default="Open")
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    class CatalogProduct(db.Model):
+    __tablename__ = "catalog_product"
+    id = db.Column(db.String(80), primary_key=True)
+    name = db.Column(db.String(200), nullable=False)
+    simulator = db.Column(db.String(80), default="MSFS 2024")
+    version = db.Column(db.String(40), default="0.1.0")
+    folder_name = db.Column(db.String(200), nullable=False)
+    download_url = db.Column(db.String(500), default="")
+    status = db.Column(db.String(50), default="in_development")
+
+
+class CatalogLivery(db.Model):
+    __tablename__ = "catalog_livery"
+    id = db.Column(db.String(80), primary_key=True)
+    name = db.Column(db.String(200), nullable=False)
+    aircraft = db.Column(db.String(200), default="Republic RC-3 Seabee")
+    folder_name = db.Column(db.String(200), nullable=False)
+    download_url = db.Column(db.String(500), default="")

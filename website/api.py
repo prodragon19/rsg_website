@@ -1,4 +1,5 @@
 import os
+import re
 import secrets
 
 from flask import Blueprint, jsonify, request
@@ -6,43 +7,32 @@ from functools import wraps
 
 from . import db
 from .extensions import bcrypt, limiter
-from .models import AdminUser, Customer, NewsletterPost, Order
+from .models import AdminUser, CatalogLivery, CatalogProduct, Customer, Order
 
 api = Blueprint("api", __name__, url_prefix="/api")
 
-PRODUCTS = [
-    {
-        "id": "seabee",
-        "name": "Republic RC-3 Seabee",
-        "simulator": "MSFS 2024",
-        "version": "0.1.0-dev",
-        "folder_name": "rsg-seabee",
-        "download_url": os.getenv("SEABEE_DOWNLOAD_URL", ""),
-        "status": "in_development",
-    }
-]
 
-LIVERIES = [
-    {
-        "id": "seabee-n87451",
-        "name": "N87451",
-        "aircraft": "Republic RC-3 Seabee",
-        "folder_name": "rsg-seabee-n87451",
-        "download_url": "",
-    },
-    {
-        "id": "seabee-white",
-        "name": "Classic White",
-        "aircraft": "Republic RC-3 Seabee",
-        "folder_name": "rsg-seabee-white",
-        "download_url": "",
-    },
-]
+def slugify(value):
+    value = (value or "").strip().lower()
+    value = re.sub(r"[^a-z0-9]+", "-", value)
+    return value.strip("-") or secrets.token_hex(4)
+
+
+def seed_catalog():
+    if CatalogProduct.query.count() == 0:
+        db.session.add(CatalogProduct(
+            id="seabee",
+            name="Republic RC-3 Seabee",
+            simulator="MSFS 2024",
+            version="0.1.0-dev",
+            folder_name="rsg-seabee",
+            download_url=os.getenv("SEABEE_DOWNLOAD_URL", ""),
+        ))
+        db.session.commit()
 
 
 def bearer_token():
-    header = request.headers.get("Authorization", "")
-    return header.replace("Bearer ", "").strip()
+    return request.headers.get("Authorization", "").replace("Bearer ", "").strip()
 
 
 def get_account_from_token():
@@ -61,10 +51,21 @@ def get_account_from_token():
 def require_account(fn):
     @wraps(fn)
     def wrapper(*args, **kwargs):
+        seed_catalog()
         account, kind = get_account_from_token()
         if not account:
             return jsonify({"error": "Unauthorized"}), 401
         return fn(account, kind, *args, **kwargs)
+    return wrapper
+
+
+def require_admin(fn):
+    @wraps(fn)
+    def wrapper(*args, **kwargs):
+        account, kind = get_account_from_token()
+        if kind != "admin":
+            return jsonify({"error": "Admin only"}), 403
+        return fn(account, *args, **kwargs)
     return wrapper
 
 
@@ -80,13 +81,12 @@ def api_login():
         (AdminUser.email == email) | (AdminUser.username == raw_login)
     ).first()
     if admin and admin.enabled and bcrypt.check_password_hash(admin.password_hash, password):
-        if not getattr(admin, "api_token", None):
+        if not admin.api_token:
             admin.api_token = secrets.token_urlsafe(32)
             db.session.commit()
         return jsonify({
             "token": admin.api_token,
             "name": admin.username,
-            "email": admin.email,
             "role": admin.role,
             "is_admin": True,
         })
@@ -107,92 +107,110 @@ def api_login():
     return jsonify({
         "token": customer.api_token,
         "name": customer.name,
-        "email": customer.email,
         "role": "Customer",
         "is_admin": False,
     })
 
 
-@api.route("/me")
-@require_account
-def api_me(account, kind):
-    if kind == "admin":
-        return jsonify({
-            "name": account.username,
-            "email": account.email,
-            "role": account.role,
-            "is_admin": True,
-        })
-    return jsonify({
-        "name": account.name,
-        "email": account.email,
-        "role": "Customer",
-        "is_admin": False,
-    })
-
-
-def owns_product(account, kind, product_id):
+def owns_content(account, kind):
     if kind == "admin" or os.getenv("RSG_DEV_UNLOCK", "").lower() == "true":
         return True
-    paid = Order.query.filter_by(
-        customer_id=account.id,
-        payment_status="Paid",
-    ).count()
-    return paid > 0 and product_id == "seabee"
+    return Order.query.filter_by(customer_id=account.id, payment_status="Paid").count() > 0
+
+
+def product_dict(item, owned):
+    return {
+        "id": item.id,
+        "name": item.name,
+        "simulator": item.simulator,
+        "version": item.version,
+        "folder_name": item.folder_name,
+        "download_url": item.download_url if owned else "",
+        "status": item.status,
+        "owned": owned,
+    }
+
+
+def livery_dict(item, owned):
+    return {
+        "id": item.id,
+        "name": item.name,
+        "aircraft": item.aircraft,
+        "folder_name": item.folder_name,
+        "download_url": item.download_url if owned else "",
+        "owned": owned,
+    }
 
 
 @api.route("/products")
 @require_account
 def api_products(account, kind):
-    items = []
-    for product in PRODUCTS:
-        item = dict(product)
-        item["owned"] = owns_product(account, kind, product["id"])
-        if not item["owned"]:
-            item["download_url"] = ""
-        items.append(item)
+    owned = owns_content(account, kind)
+    items = [product_dict(item, owned) for item in CatalogProduct.query.order_by(CatalogProduct.name).all()]
     return jsonify({"products": items})
 
 
 @api.route("/liveries")
 @require_account
 def api_liveries(account, kind):
-    items = []
-    for livery in LIVERIES:
-        item = dict(livery)
-        item["owned"] = owns_product(account, kind, "seabee")
-        items.append(item)
+    owned = owns_content(account, kind)
+    items = [livery_dict(item, owned) for item in CatalogLivery.query.order_by(CatalogLivery.name).all()]
     return jsonify({"liveries": items})
 
 
-@api.route("/newsletter")
-def api_newsletter():
-    posts = NewsletterPost.query.order_by(NewsletterPost.date_posted.desc()).limit(20).all()
-    return jsonify({
-        "posts": [
-            {
-                "id": post.id,
-                "title": post.title,
-                "content": post.content,
-                "author": post.author,
-                "date": post.date_posted.strftime("%Y-%m-%d") if post.date_posted else "",
-            }
-            for post in posts
-        ]
-    })
-
-
 @api.route("/admin/overview")
-@require_account
-def api_admin_overview(account, kind):
-    if kind != "admin":
-        return jsonify({"error": "Admin only"}), 403
+@require_admin
+def api_admin_overview(admin):
     return jsonify({
-        "name": account.username,
-        "role": account.role,
+        "name": admin.username,
+        "role": admin.role,
+        "products": CatalogProduct.query.count(),
+        "liveries": CatalogLivery.query.count(),
         "customers": Customer.query.count(),
-        "orders": Order.query.count(),
-        "products": len(PRODUCTS),
-        "liveries": len(LIVERIES),
-        "dashboard_url": "https://rsg-website.onrender.com/admin/",
     })
+
+
+@api.route("/admin/products", methods=["POST"])
+@require_admin
+def api_add_product(admin):
+    data = request.get_json(silent=True) or {}
+    name = (data.get("name") or "").strip()
+    if not name:
+        return jsonify({"error": "Name is required"}), 400
+    item_id = slugify(data.get("id") or name)
+    if CatalogProduct.query.get(item_id):
+        return jsonify({"error": "Product already exists"}), 400
+    item = CatalogProduct(
+        id=item_id,
+        name=name,
+        simulator=data.get("simulator") or "MSFS 2024",
+        version=data.get("version") or "0.1.0",
+        folder_name=data.get("folder_name") or f"rsg-{item_id}",
+        download_url=data.get("download_url") or "",
+        status=data.get("status") or "in_development",
+    )
+    db.session.add(item)
+    db.session.commit()
+    return jsonify({"ok": True, "product": product_dict(item, True)})
+
+
+@api.route("/admin/liveries", methods=["POST"])
+@require_admin
+def api_add_livery(admin):
+    data = request.get_json(silent=True) or {}
+    name = (data.get("name") or "").strip()
+    if not name:
+        return jsonify({"error": "Name is required"}), 400
+    item_id = slugify(data.get("id") or name)
+    if CatalogLivery.query.get(item_id):
+        return jsonify({"error": "Livery already exists"}), 400
+    item = CatalogLivery(
+        id=item_id,
+        name=name,
+        aircraft=data.get("aircraft") or "Republic RC-3 Seabee",
+        folder_name=data.get("folder_name") or f"rsg-{item_id}",
+        download_url=data.get("download_url") or "",
+    )
+    db.session.add(item)
+    db.session.commit()
+    return jsonify({"ok": True, "livery": livery_dict(item, True)})
