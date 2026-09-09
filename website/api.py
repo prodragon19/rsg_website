@@ -6,7 +6,7 @@ from functools import wraps
 
 from . import db
 from .extensions import bcrypt, limiter
-from .models import Customer, Order
+from .models import AdminUser, Customer, NewsletterPost, Order
 
 api = Blueprint("api", __name__, url_prefix="/api")
 
@@ -22,22 +22,49 @@ PRODUCTS = [
     }
 ]
 
+LIVERIES = [
+    {
+        "id": "seabee-n87451",
+        "name": "N87451",
+        "aircraft": "Republic RC-3 Seabee",
+        "folder_name": "rsg-seabee-n87451",
+        "download_url": "",
+    },
+    {
+        "id": "seabee-white",
+        "name": "Classic White",
+        "aircraft": "Republic RC-3 Seabee",
+        "folder_name": "rsg-seabee-white",
+        "download_url": "",
+    },
+]
 
-def get_customer_from_token():
+
+def bearer_token():
     header = request.headers.get("Authorization", "")
-    token = header.replace("Bearer ", "").strip()
+    return header.replace("Bearer ", "").strip()
+
+
+def get_account_from_token():
+    token = bearer_token()
     if not token:
-        return None
-    return Customer.query.filter_by(api_token=token).first()
+        return None, None
+    admin = AdminUser.query.filter_by(api_token=token).first()
+    if admin and admin.enabled:
+        return admin, "admin"
+    customer = Customer.query.filter_by(api_token=token).first()
+    if customer and not customer.banned:
+        return customer, "customer"
+    return None, None
 
 
-def require_customer(fn):
+def require_account(fn):
     @wraps(fn)
     def wrapper(*args, **kwargs):
-        customer = get_customer_from_token()
-        if not customer or customer.banned:
+        account, kind = get_account_from_token()
+        if not account:
             return jsonify({"error": "Unauthorized"}), 401
-        return fn(customer, *args, **kwargs)
+        return fn(account, kind, *args, **kwargs)
     return wrapper
 
 
@@ -45,8 +72,24 @@ def require_customer(fn):
 @limiter.limit("8 per minute")
 def api_login():
     data = request.get_json(silent=True) or {}
-    email = (data.get("email") or "").strip().lower()
+    raw_login = (data.get("email") or "").strip()
+    email = raw_login.lower()
     password = data.get("password") or ""
+
+    admin = AdminUser.query.filter(
+        (AdminUser.email == email) | (AdminUser.username == raw_login)
+    ).first()
+    if admin and admin.enabled and bcrypt.check_password_hash(admin.password_hash, password):
+        if not getattr(admin, "api_token", None):
+            admin.api_token = secrets.token_urlsafe(32)
+            db.session.commit()
+        return jsonify({
+            "token": admin.api_token,
+            "name": admin.username,
+            "email": admin.email,
+            "role": admin.role,
+            "is_admin": True,
+        })
 
     customer = Customer.query.filter_by(email=email).first()
     if (
@@ -65,37 +108,91 @@ def api_login():
         "token": customer.api_token,
         "name": customer.name,
         "email": customer.email,
+        "role": "Customer",
+        "is_admin": False,
     })
 
 
 @api.route("/me")
-@require_customer
-def api_me(customer):
+@require_account
+def api_me(account, kind):
+    if kind == "admin":
+        return jsonify({
+            "name": account.username,
+            "email": account.email,
+            "role": account.role,
+            "is_admin": True,
+        })
     return jsonify({
-        "name": customer.name,
-        "email": customer.email,
+        "name": account.name,
+        "email": account.email,
+        "role": "Customer",
+        "is_admin": False,
     })
 
 
-def customer_owns_product(customer, product_id):
-    if os.getenv("RSG_DEV_UNLOCK", "").lower() == "true":
+def owns_product(account, kind, product_id):
+    if kind == "admin" or os.getenv("RSG_DEV_UNLOCK", "").lower() == "true":
         return True
-
     paid = Order.query.filter_by(
-        customer_id=customer.id,
+        customer_id=account.id,
         payment_status="Paid",
     ).count()
     return paid > 0 and product_id == "seabee"
 
 
 @api.route("/products")
-@require_customer
-def api_products(customer):
+@require_account
+def api_products(account, kind):
     items = []
     for product in PRODUCTS:
         item = dict(product)
-        item["owned"] = customer_owns_product(customer, product["id"])
+        item["owned"] = owns_product(account, kind, product["id"])
         if not item["owned"]:
             item["download_url"] = ""
         items.append(item)
     return jsonify({"products": items})
+
+
+@api.route("/liveries")
+@require_account
+def api_liveries(account, kind):
+    items = []
+    for livery in LIVERIES:
+        item = dict(livery)
+        item["owned"] = owns_product(account, kind, "seabee")
+        items.append(item)
+    return jsonify({"liveries": items})
+
+
+@api.route("/newsletter")
+def api_newsletter():
+    posts = NewsletterPost.query.order_by(NewsletterPost.date_posted.desc()).limit(20).all()
+    return jsonify({
+        "posts": [
+            {
+                "id": post.id,
+                "title": post.title,
+                "content": post.content,
+                "author": post.author,
+                "date": post.date_posted.strftime("%Y-%m-%d") if post.date_posted else "",
+            }
+            for post in posts
+        ]
+    })
+
+
+@api.route("/admin/overview")
+@require_account
+def api_admin_overview(account, kind):
+    if kind != "admin":
+        return jsonify({"error": "Admin only"}), 403
+    return jsonify({
+        "name": account.username,
+        "role": account.role,
+        "customers": Customer.query.count(),
+        "orders": Order.query.count(),
+        "products": len(PRODUCTS),
+        "liveries": len(LIVERIES),
+        "dashboard_url": "https://rsg-website.onrender.com/admin/",
+    })
