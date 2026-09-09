@@ -11,6 +11,9 @@ from .models import AdminUser, CatalogLivery, CatalogProduct, Customer, Order
 
 api = Blueprint("api", __name__, url_prefix="/api")
 
+DEFAULT_IMAGE = "https://i.postimg.cc/28WybSM2/metroliner.jpg"
+DEFAULT_BUY = "https://rsg-website.onrender.com/aircraft/seabee"
+
 
 def slugify(value):
     value = (value or "").strip().lower()
@@ -27,6 +30,10 @@ def seed_catalog():
             version="0.1.0-dev",
             folder_name="rsg-seabee",
             download_url=os.getenv("SEABEE_DOWNLOAD_URL", ""),
+            image_url=DEFAULT_IMAGE,
+            price="$29.99",
+            description="Amphibious flying boat for Microsoft Flight Simulator 2024.",
+            buy_url=DEFAULT_BUY,
         ))
         db.session.commit()
 
@@ -87,6 +94,7 @@ def api_login():
         return jsonify({
             "token": admin.api_token,
             "name": admin.username,
+            "email": admin.email,
             "role": admin.role,
             "is_admin": True,
         })
@@ -107,6 +115,7 @@ def api_login():
     return jsonify({
         "token": customer.api_token,
         "name": customer.name,
+        "email": customer.email,
         "role": "Customer",
         "is_admin": False,
     })
@@ -128,6 +137,10 @@ def product_dict(item, owned):
         "download_url": item.download_url if owned else "",
         "status": item.status,
         "owned": owned,
+        "image_url": item.image_url or DEFAULT_IMAGE,
+        "price": item.price or "$29.99",
+        "description": item.description or "",
+        "buy_url": item.buy_url or DEFAULT_BUY,
     }
 
 
@@ -139,6 +152,7 @@ def livery_dict(item, owned):
         "folder_name": item.folder_name,
         "download_url": item.download_url if owned else "",
         "owned": owned,
+        "image_url": item.image_url or DEFAULT_IMAGE,
     }
 
 
@@ -187,6 +201,10 @@ def api_add_product(admin):
         version=data.get("version") or "0.1.0",
         folder_name=data.get("folder_name") or f"rsg-{item_id}",
         download_url=data.get("download_url") or "",
+        image_url=data.get("image_url") or DEFAULT_IMAGE,
+        price=data.get("price") or "$29.99",
+        description=data.get("description") or "",
+        buy_url=data.get("buy_url") or DEFAULT_BUY,
         status=data.get("status") or "in_development",
     )
     db.session.add(item)
@@ -210,6 +228,7 @@ def api_add_livery(admin):
         aircraft=data.get("aircraft") or "Republic RC-3 Seabee",
         folder_name=data.get("folder_name") or f"rsg-{item_id}",
         download_url=data.get("download_url") or "",
+        image_url=data.get("image_url") or DEFAULT_IMAGE,
     )
     db.session.add(item)
     db.session.commit()

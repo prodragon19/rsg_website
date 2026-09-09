@@ -17,7 +17,6 @@ db = SQLAlchemy()
 
 
 def upgrade_database_schema():
-    """Apply the small, backwards-compatible migrations needed by this app."""
     inspector = inspect(db.engine)
 
     if "admin_user" not in inspector.get_table_names():
@@ -33,40 +32,40 @@ def upgrade_database_schema():
 
     with db.engine.begin() as connection:
         if "two_factor_secret" not in admin_columns:
-            connection.execute(
-                text("ALTER TABLE admin_user ADD COLUMN two_factor_secret VARCHAR(255)")
-            )
+            connection.execute(text("ALTER TABLE admin_user ADD COLUMN two_factor_secret VARCHAR(255)"))
         if "api_token" not in admin_columns:
-            connection.execute(
-                text("ALTER TABLE admin_user ADD COLUMN api_token VARCHAR(100)")
-            )
+            connection.execute(text("ALTER TABLE admin_user ADD COLUMN api_token VARCHAR(100)"))
         if "unusual" not in session_columns:
-            connection.execute(
-                text("ALTER TABLE admin_session ADD COLUMN unusual BOOLEAN DEFAULT false")
-            )
+            connection.execute(text("ALTER TABLE admin_session ADD COLUMN unusual BOOLEAN DEFAULT false"))
         if "last_login" not in customer_columns:
-            connection.execute(
-                text("ALTER TABLE customer ADD COLUMN last_login TIMESTAMP")
-            )
+            connection.execute(text("ALTER TABLE customer ADD COLUMN last_login TIMESTAMP"))
         if "pending_email" not in customer_columns:
-            connection.execute(
-                text("ALTER TABLE customer ADD COLUMN pending_email VARCHAR(200)")
-            )
+            connection.execute(text("ALTER TABLE customer ADD COLUMN pending_email VARCHAR(200)"))
         if "email_token" not in customer_columns:
-            connection.execute(
-                text("ALTER TABLE customer ADD COLUMN email_token VARCHAR(100)")
-            )
+            connection.execute(text("ALTER TABLE customer ADD COLUMN email_token VARCHAR(100)"))
         if "api_token" not in customer_columns:
-            connection.execute(
-                text("ALTER TABLE customer ADD COLUMN api_token VARCHAR(100)")
-            )
+            connection.execute(text("ALTER TABLE customer ADD COLUMN api_token VARCHAR(100)"))
+
+        if "catalog_product" in inspector.get_table_names():
+            product_cols = {c["name"] for c in inspector.get_columns("catalog_product")}
+            if "image_url" not in product_cols:
+                connection.execute(text("ALTER TABLE catalog_product ADD COLUMN image_url VARCHAR(500)"))
+            if "price" not in product_cols:
+                connection.execute(text("ALTER TABLE catalog_product ADD COLUMN price VARCHAR(40)"))
+            if "description" not in product_cols:
+                connection.execute(text("ALTER TABLE catalog_product ADD COLUMN description TEXT"))
+            if "buy_url" not in product_cols:
+                connection.execute(text("ALTER TABLE catalog_product ADD COLUMN buy_url VARCHAR(500)"))
+
+        if "catalog_livery" in inspector.get_table_names():
+            livery_cols = {c["name"] for c in inspector.get_columns("catalog_livery")}
+            if "image_url" not in livery_cols:
+                connection.execute(text("ALTER TABLE catalog_livery ADD COLUMN image_url VARCHAR(500)"))
 
 
 def ensure_bootstrap_owner():
-    """Create or update the configured initial owner."""
     username = os.getenv("ADMIN_USERNAME")
     password = os.getenv("ADMIN_PASSWORD")
-
     if not username or not password:
         return
 
@@ -74,7 +73,6 @@ def ensure_bootstrap_owner():
     from .models import AdminUser
 
     email = os.getenv("ADMIN_EMAIL", f"{username}@rsgsoftware.com").lower()
-
     admin = AdminUser.query.filter_by(username=username).first()
     if admin is None:
         admin = AdminUser.query.filter_by(email=email).first()
@@ -108,7 +106,6 @@ def create_app():
 
     database_url = os.getenv("DATABASE_URL", "sqlite:///database.db")
 
-    # Fix for Render + psycopg3
     if database_url.startswith("postgres://"):
         database_url = database_url.replace("postgres://", "postgresql+psycopg://", 1)
     elif database_url.startswith("postgresql://"):
@@ -116,7 +113,6 @@ def create_app():
 
     app.config["SQLALCHEMY_DATABASE_URI"] = database_url
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-
     app.config["SESSION_COOKIE_HTTPONLY"] = True
     app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
 

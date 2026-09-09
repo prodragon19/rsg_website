@@ -111,7 +111,8 @@ class SupportTicket(db.Model):
     status = db.Column(db.String(50), default="Open")
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
-    class CatalogProduct(db.Model):
+
+class CatalogProduct(db.Model):
     __tablename__ = "catalog_product"
     id = db.Column(db.String(80), primary_key=True)
     name = db.Column(db.String(200), nullable=False)
@@ -120,6 +121,10 @@ class SupportTicket(db.Model):
     folder_name = db.Column(db.String(200), nullable=False)
     download_url = db.Column(db.String(500), default="")
     status = db.Column(db.String(50), default="in_development")
+    image_url = db.Column(db.String(500), default="")
+    price = db.Column(db.String(40), default="$29.99")
+    description = db.Column(db.Text, default="")
+    buy_url = db.Column(db.String(500), default="")
 
 
 class CatalogLivery(db.Model):
@@ -129,3 +134,4 @@ class CatalogLivery(db.Model):
     aircraft = db.Column(db.String(200), default="Republic RC-3 Seabee")
     folder_name = db.Column(db.String(200), nullable=False)
     download_url = db.Column(db.String(500), default="")
+    image_url = db.Column(db.String(500), default="")
