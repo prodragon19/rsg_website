@@ -69,9 +69,10 @@ def require_account(fn):
 def require_admin(fn):
     @wraps(fn)
     def wrapper(*args, **kwargs):
+        seed_catalog()
         account, kind = get_account_from_token()
         if kind != "admin":
-            return jsonify({"error": "Admin only"}), 403
+            return jsonify({"error": "Admin only. Log in with the admin account."}), 403
         return fn(account, *args, **kwargs)
     return wrapper
 
@@ -153,6 +154,11 @@ def livery_dict(item, owned):
         "download_url": item.download_url if owned else "",
         "owned": owned,
         "image_url": item.image_url or DEFAULT_IMAGE,
+        "price": "",
+        "description": "",
+        "buy_url": "",
+        "version": "",
+        "simulator": "",
     }
 
 
@@ -192,22 +198,20 @@ def api_add_product(admin):
     if not name:
         return jsonify({"error": "Name is required"}), 400
     item_id = slugify(data.get("id") or name)
-    if CatalogProduct.query.get(item_id):
-        return jsonify({"error": "Product already exists"}), 400
-    item = CatalogProduct(
-        id=item_id,
-        name=name,
-        simulator=data.get("simulator") or "MSFS 2024",
-        version=data.get("version") or "0.1.0",
-        folder_name=data.get("folder_name") or f"rsg-{item_id}",
-        download_url=data.get("download_url") or "",
-        image_url=data.get("image_url") or DEFAULT_IMAGE,
-        price=data.get("price") or "$29.99",
-        description=data.get("description") or "",
-        buy_url=data.get("buy_url") or DEFAULT_BUY,
-        status=data.get("status") or "in_development",
-    )
-    db.session.add(item)
+    item = db.session.get(CatalogProduct, item_id)
+    if item is None:
+        item = CatalogProduct(id=item_id, name=name)
+        db.session.add(item)
+    item.name = name
+    item.simulator = data.get("simulator") or item.simulator or "MSFS 2024"
+    item.version = data.get("version") or item.version or "0.1.0"
+    item.folder_name = data.get("folder_name") or item.folder_name or f"rsg-{item_id}"
+    item.download_url = data.get("download_url") if data.get("download_url") is not None else (item.download_url or "")
+    item.image_url = data.get("image_url") or item.image_url or DEFAULT_IMAGE
+    item.price = data.get("price") or item.price or "$29.99"
+    item.description = data.get("description") if data.get("description") is not None else (item.description or "")
+    item.buy_url = data.get("buy_url") or item.buy_url or DEFAULT_BUY
+    item.status = data.get("status") or item.status or "in_development"
     db.session.commit()
     return jsonify({"ok": True, "product": product_dict(item, True)})
 
@@ -220,16 +224,14 @@ def api_add_livery(admin):
     if not name:
         return jsonify({"error": "Name is required"}), 400
     item_id = slugify(data.get("id") or name)
-    if CatalogLivery.query.get(item_id):
-        return jsonify({"error": "Livery already exists"}), 400
-    item = CatalogLivery(
-        id=item_id,
-        name=name,
-        aircraft=data.get("aircraft") or "Republic RC-3 Seabee",
-        folder_name=data.get("folder_name") or f"rsg-{item_id}",
-        download_url=data.get("download_url") or "",
-        image_url=data.get("image_url") or DEFAULT_IMAGE,
-    )
-    db.session.add(item)
+    item = db.session.get(CatalogLivery, item_id)
+    if item is None:
+        item = CatalogLivery(id=item_id, name=name)
+        db.session.add(item)
+    item.name = name
+    item.aircraft = data.get("aircraft") or item.aircraft or "Republic RC-3 Seabee"
+    item.folder_name = data.get("folder_name") or item.folder_name or f"rsg-{item_id}"
+    item.download_url = data.get("download_url") if data.get("download_url") is not None else (item.download_url or "")
+    item.image_url = data.get("image_url") or item.image_url or DEFAULT_IMAGE
     db.session.commit()
     return jsonify({"ok": True, "livery": livery_dict(item, True)})
